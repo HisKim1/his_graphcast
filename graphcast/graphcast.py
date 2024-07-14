@@ -127,7 +127,7 @@ GENERATED_FORCING_VARS = (
 )
 FORCING_VARS = EXTERNAL_FORCING_VARS + GENERATED_FORCING_VARS
 STATIC_VARS = (
-    "geopotential_at_surface",
+    "geopotential_at_surface",  
     "land_sea_mask",
 )
 
@@ -360,6 +360,7 @@ class GraphCast(predictor_base.Predictor):
                forcings: xarray.Dataset,
                is_training: bool = False,
                ) -> xarray.Dataset:
+    print("|| graphcast.py -> __call__() init ||")
     self._maybe_init(inputs)
 
     # Convert all input data into flat vectors for each of the grid nodes.
@@ -371,19 +372,25 @@ class GraphCast(predictor_base.Predictor):
     # [num_mesh_nodes, batch, latent_size], [num_grid_nodes, batch, latent_size]
     (latent_mesh_nodes, latent_grid_nodes
      ) = self._run_grid2mesh_gnn(grid_node_features)
+    print(f'latent_mesh_nodes shape: {latent_mesh_nodes.shape}')
 
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes = self._run_mesh_gnn(latent_mesh_nodes)
+    print(f'updated_latent_mesh_nodes shape: {updated_latent_mesh_nodes.shape}')
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
     output_grid_nodes = self._run_mesh2grid_gnn(
         updated_latent_mesh_nodes, latent_grid_nodes)
+    print(f'output_grid_nodes shape: {output_grid_nodes.shape}')
 
     # Conver output flat vectors for the grid nodes to the format of the output.
     # [num_grid_nodes, batch, output_size] ->
     # xarray (batch, one time step, lat, lon, level, multiple vars)
+    
+    print("|| graphcast.py -> __call__() done ||")
+
     return self._grid_node_outputs_to_prediction(
         output_grid_nodes, targets_template)
 

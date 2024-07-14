@@ -46,6 +46,7 @@ def chunked_prediction(
     num_steps_per_chunk: int = 1,
     verbose: bool = False,
 ) -> xarray.Dataset:
+  print("|| rollout.py -> chunked_prediction() init. ||")
   """Outputs a long trajectory by iteratively concatenating chunked predictions.
 
   Args:
@@ -74,6 +75,7 @@ def chunked_prediction(
       num_steps_per_chunk=num_steps_per_chunk,
       verbose=verbose):
     chunks_list.append(jax.device_get(prediction_chunk))
+  print("|| rollout.py -> chunked_prediction() done ||")
   return xarray.concat(chunks_list, dim="time")
 
 
@@ -86,6 +88,7 @@ def chunked_prediction_generator(
     num_steps_per_chunk: int = 1,
     verbose: bool = False,
 ) -> Iterator[xarray.Dataset]:
+  print("|| rollout.py -> chunked_prediction_generator() init. ||")
   """Outputs a long trajectory by yielding chunked predictions.
 
   Args:
@@ -182,6 +185,8 @@ def chunked_prediction_generator(
           time=target_slice)
     yield predictions
     del predictions
+
+    print("|| rollout.py -> chunked_prediction_generator() done ||")
 
 
 def _get_next_inputs(
