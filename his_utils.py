@@ -2,8 +2,9 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from graphcast import data_utils
 
-def accumulate_precip_dataset(dataset):
+def accumulate_precip_dataset(ds):
     # 1. 6시간 간격으로 시간 선택 (0, 6, 12, 18시)
     hours = ds.time.dt.total_seconds() / 3600
     time_selector = (hours % 24).isin([0, 6, 12, 18])
@@ -36,7 +37,6 @@ def accumulate_precip_dataset(dataset):
         new_ds.coords['datetime'] = ds_6h.datetime
 
     return new_ds
-
 
 def transform_dataset(dataset):
     # 1. batch 차원 추가
@@ -82,12 +82,48 @@ def transform_dataset(dataset):
     
     return dataset
 
+def create_forcing_dataset(time_steps, resolution, start_time):
+    # Define coordinates
+    lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
+    lat = np.arange(90.0, -90.0 - resolution/2, -resolution, dtype=np.float32)
+    
+    time_deltas = pd.timedelta_range(start='6h', periods=time_steps, freq='6h')
+    time = pd.date_range(start=pd.to_datetime(start_time) + pd.Timedelta(hours=6),
+                         periods=time_steps,
+                         freq='6h')
+
+    # Create the dataset
+    ds = xr.Dataset(
+        coords={
+            'lon': ('lon', lon),
+            'lat': ('lat', lat),
+            'time': ('time', time),
+        }
+    )
+
+    ds.lat.attrs['long_name'] = 'latitude'
+    ds.lat.attrs['units'] = 'degrees_north'
+
+    ds.lon.attrs['long_name'] = 'longitude'
+    ds.lon.attrs['units'] = 'degrees_east'
+
+    variables = ['toa_incident_solar_radiation',
+                 'year_progress_sin',
+                 'year_progress_cos',
+                 'day_progress_sin',
+                 'day_progress_cos']
+    
+    data_utils.add_tisr_var(ds)
+
+
 # Example usage:
+
+# DONE
 # ds = create_nan_dataset(time_steps=10, resolution=1, pressure_levels=13, start_time='2023-01-01')
 def create_nan_dataset(time_steps, resolution, pressure_levels, start_time):
     # Define coordinates
     lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
-    lat = np.arange(-90.0, 90.0 + resolution/2, resolution, dtype=np.float32)  
+    lat = np.arange(-90.0, 90.0 + resolution/2, resolution, dtype=np.float32)
     
     if pressure_levels == 37:
         level = [   1,    2,    3,    5,    7,   10,   20,   30,   50,   70,  100,  125, 150,  175,  200,  225,  250,  300,  350,  400,  450,  500,  550,  600, 650,  700,  750,  775,  800,  825,  850,  875,  900,  925,  950,  975, 1000]
@@ -98,12 +134,10 @@ def create_nan_dataset(time_steps, resolution, pressure_levels, start_time):
 
     level = np.array(level, dtype=np.int64)
 
-    # 시작 시간부터 10개의 6시간 간격 타임델타 생성
-    time_deltas = pd.timedelta_range(start='6h', periods=time_steps, freq='6h')
-
-    time = pd.date_range(start=start_time, periods=time_steps, freq='6h')
-    # Remove the conversion to timedelta
-    # time = time.astype('timedelta64[ns]')
+    # 시작 시간부터 time_steps 개의 6시간 간격 타임델타 생성
+    time = pd.timedelta_range(start='6h', periods=time_steps, freq='6h')
+    # timedelta64[ns]로 명시적 변환
+    # time = time.astype('timedelta64[ns]')/
 
     # Create the dataset
     ds = xr.Dataset(
@@ -111,7 +145,7 @@ def create_nan_dataset(time_steps, resolution, pressure_levels, start_time):
             'lon': ('lon', lon),
             'lat': ('lat', lat),
             'level': ('level', level.astype(np.int32)),
-            'time': ('time', time_deltas),
+            'time': ('time', time),
         }
     )
 
