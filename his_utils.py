@@ -83,37 +83,9 @@ def transform_dataset(dataset):
     return dataset
 
 def create_forcing_dataset(time_steps, resolution, start_time):
-    # Define coordinates
-    lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
-    lat = np.arange(90.0, -90.0 - resolution/2, -resolution, dtype=np.float32)
-    
-    time_deltas = pd.timedelta_range(start='6h', periods=time_steps, freq='6h')
-    time = pd.date_range(start=pd.to_datetime(start_time) + pd.Timedelta(hours=6),
-                         periods=time_steps,
-                         freq='6h')
-
-    # Create the dataset
-    ds = xr.Dataset(
-        coords={
-            'lon': ('lon', lon),
-            'lat': ('lat', lat),
-            'time': ('time', time),
-        }
-    )
-
-    ds.lat.attrs['long_name'] = 'latitude'
-    ds.lat.attrs['units'] = 'degrees_north'
-
-    ds.lon.attrs['long_name'] = 'longitude'
-    ds.lon.attrs['units'] = 'degrees_east'
-
-    variables = ['toa_incident_solar_radiation',
-                 'year_progress_sin',
-                 'year_progress_cos',
-                 'day_progress_sin',
-                 'day_progress_cos']
-    
-    data_utils.add_tisr_var(ds)
+###################
+# need to fill in #
+###################
 
 
 # Example usage:
