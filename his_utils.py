@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from graphcast import data_utils
 
+
 def accumulate_precip_dataset(ds):
     # 1. 6시간 간격으로 시간 선택 (0, 6, 12, 18시)
     hours = ds.time.dt.total_seconds() / 3600
@@ -37,6 +38,7 @@ def accumulate_precip_dataset(ds):
         new_ds.coords['datetime'] = ds_6h.datetime
 
     return new_ds
+
 
 def transform_dataset(dataset):
     # 1. batch 차원 추가
@@ -82,6 +84,7 @@ def transform_dataset(dataset):
     
     return dataset
 
+
 def create_forcing_dataset(time_steps, resolution, start_time):
     lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
     lat = np.arange(-90.0, 90.0 + resolution/2, resolution, dtype=np.float32)
@@ -89,7 +92,7 @@ def create_forcing_dataset(time_steps, resolution, start_time):
     start_datetime = pd.to_datetime(start_time) + pd.Timedelta(hours=12)
     datetime = pd.date_range(start=start_datetime, periods=time_steps, freq='6h')
     
-    time = pd.timedelta_range(start='12h', periods=time_steps, freq='6h')
+    time = pd.timedelta_range(start='6h', periods=time_steps, freq='6h')
     
     # Create the dataset
     ds = xr.Dataset(
