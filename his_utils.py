@@ -11,7 +11,7 @@ def accumulate_precip_dataset(ds):
     ds_6h = ds.sel(time=time_selector)
 
     # 2. total_precipitation 6시간 누적 계산
-    precip_6h = ds.total_precipitation.resample(time='6H').sum()
+    precip_6h = ds.total_precipitation.resample(time='6h').sum()
     precip_6h = precip_6h.rename('total_precipitation_6hr')
 
     # 3. 새로운 Dataset 생성
@@ -86,10 +86,10 @@ def create_forcing_dataset(time_steps, resolution, start_time):
     lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
     lat = np.arange(-90.0, 90.0 + resolution/2, resolution, dtype=np.float32)
     
-    start_datetime = pd.to_datetime(start_time) + pd.Timedelta(hours=6)
+    start_datetime = pd.to_datetime(start_time) + pd.Timedelta(hours=12)
     datetime = pd.date_range(start=start_datetime, periods=time_steps, freq='6h')
     
-    time = pd.timedelta_range(start='6h', periods=time_steps, freq='6h')
+    time = pd.timedelta_range(start='12h', periods=time_steps, freq='6h')
     
     # Create the dataset
     ds = xr.Dataset(

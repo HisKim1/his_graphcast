@@ -1,0 +1,14 @@
+__pycache__/
+
+.idea/
+
+
+build/
+
+dist/
+
+graphcast.egg-info/
+
+testdata/
+
+era5*
