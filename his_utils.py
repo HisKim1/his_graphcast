@@ -5,6 +5,16 @@ import matplotlib.pyplot as plt
 from graphcast import data_utils
 
 
+def save_gif(image_frames, save_path, duration):
+    image_frames[0].save(save_path,
+                         format='GIF',
+                         append_images=image_frames[1:],
+                         # save_all : 모든 프레임을 저장할 것인지
+                         save_all=True,
+                         # duration : 프레임 간의 시간 간격 (ms)
+                         duration=duration,
+                         loop=0)
+
 def accumulate_precip_dataset(ds):
     # 1. 6시간 간격으로 시간 선택 (0, 6, 12, 18시)
     hours = ds.time.dt.total_seconds() / 3600
@@ -39,10 +49,10 @@ def accumulate_precip_dataset(ds):
 
     return new_ds
 
-
 def transform_dataset(dataset):
     # 1. batch 차원 추가
-    dataset = dataset.expand_dims(dim={'batch': [0]})
+    if 'batch' not in dataset.dims:
+        dataset = dataset.expand_dims(dim={'batch': [0]})
     
     # 2. 변수 이름 매핑
     name_mapping = {
@@ -50,8 +60,7 @@ def transform_dataset(dataset):
         'v10': '10m_v_component_of_wind',
         't2m': '2m_temperature',
         'msl': 'mean_sea_level_pressure',
-        'tp': 'total_precipitation',
-        'tisr': 'toa_incident_solar_radiation',
+        'tp': 'total_precipitation_6hr',
         'z': 'geopotential',
         'q': 'specific_humidity',
         't': 'temperature',
@@ -70,7 +79,7 @@ def transform_dataset(dataset):
     dataset['time'] = (dataset.time - start_time).astype('timedelta64[ns]')
     
     # 5. datetime 좌표 추가
-    dataset.coords['datetime'] = ('time', pd.date_range(start=start_time, periods=len(dataset.time), freq='h'))
+    dataset.coords['datetime'] = ('time', pd.date_range(start=start_time, periods=len(dataset.time), freq='6h'))
     dataset['datetime'] = dataset['datetime'].expand_dims({'batch': [0]}, axis=0)
     
     # 6. geopotential_at_surface 처리
@@ -83,7 +92,6 @@ def transform_dataset(dataset):
         dataset['land_sea_mask'] = dataset['land_sea_mask'].isel(time=0, drop=True)
     
     return dataset
-
 
 def create_forcing_dataset(time_steps, resolution, start_time):
     lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
@@ -147,11 +155,6 @@ def create_forcing_dataset(time_steps, resolution, start_time):
 
     return ds
 
-
-# Example usage:
-
-# DONE
-# ds = create_target_dataset(time_steps=10, resolution=1, pressure_levels=13)
 def create_target_dataset(time_steps, resolution, pressure_levels):
     # Define coordinates
     lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
@@ -229,8 +232,7 @@ def compare_dataarrays(da1: xr.DataArray, da2: xr.DataArray):
         for coord in da1.coords:
             if not da1.coords[coord].identical(da2.coords[coord]):
                 differences.append(f"Coordinate '{coord}' values differ:")
-                differences.append(f"  DA1: {da1.coords[coord].values}")
-                differences.append(f"  DA2: {da2.coords[coord].values}")
+                differences.append(f"{da1.coords[coord]-da2.coords[coord]}")
 
     # Compare attributes
     if da1.attrs != da2.attrs:
