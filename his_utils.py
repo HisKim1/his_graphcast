@@ -5,6 +5,20 @@ import matplotlib.pyplot as plt
 from graphcast import data_utils
 
 
+def convert_scale(dataset):
+    """
+        convert scale of tp_6hr and slp to mm and hPa
+    """
+    if 'total_precipitation_6hr' in dataset:
+        dataset['total_precipitation_6hr'] *= 1000
+        dataset['total_precipitation_6hr'].attrs['units'] = 'mm'
+
+    if 'mean_sea_level_pressure' in dataset:
+        dataset['mean_sea_level_pressure'] /= 100
+        dataset['mean_sea_level_pressure'].attrs['units'] = 'hPa'
+
+    return dataset
+
 def save_gif(image_frames, save_path, duration):
     image_frames[0].save(save_path,
                          format='GIF',
@@ -15,41 +29,11 @@ def save_gif(image_frames, save_path, duration):
                          duration=duration,
                          loop=0)
 
-def accumulate_precip_dataset(ds):
-    # 1. 6시간 간격으로 시간 선택 (0, 6, 12, 18시)
-    hours = ds.time.dt.total_seconds() / 3600
-    time_selector = (hours % 24).isin([0, 6, 12, 18])
-    ds_6h = ds.sel(time=time_selector)
-
-    # 2. total_precipitation 6시간 누적 계산
-    precip_6h = ds.total_precipitation.resample(time='6h').sum()
-    precip_6h = precip_6h.rename('total_precipitation_6hr')
-
-    # 3. 새로운 Dataset 생성
-    new_ds = xr.Dataset()
-
-    # 4. 좌표 복사
-    for coord in ds.coords:
-        if coord != 'time':
-            new_ds.coords[coord] = ds.coords[coord]
-
-    # 5. 시간 좌표 업데이트
-    new_ds.coords['time'] = ds_6h.time
-
-    # 6. 변수 처리
-    for var in ds.data_vars:
-        if var == 'total_precipitation':
-            new_ds['total_precipitation_6hr'] = precip_6h.sel(time=new_ds.time)
-        else:
-            new_ds[var] = ds_6h[var]
-
-    # 7. datetime 좌표 추가 (있는 경우)
-    if 'datetime' in ds.coords:
-        new_ds.coords['datetime'] = ds_6h.datetime
-
-    return new_ds
-
 def transform_dataset(dataset):
+    """
+        Transform the dataset to the format such as variable names and coordinates required by the model.
+        Referenced at data_concat.ipynb
+    """
     # 1. batch 차원 추가
     if 'batch' not in dataset.dims:
         dataset = dataset.expand_dims(dim={'batch': [0]})
@@ -66,14 +50,16 @@ def transform_dataset(dataset):
         't': 'temperature',
         'u': 'u_component_of_wind',
         'v': 'v_component_of_wind',
-        'w': 'vertical_velocity'
+        'w': 'vertical_velocity',
+        'tisr': 'toa_incident_solar_radiation',
+        'longitude': 'lon',
+        'latitude': 'lat'
     }
     
-    dataset = dataset.rename(name_mapping)
-    
-    # 3. 좌표 이름 변경
-    dataset = dataset.rename({'longitude': 'lon', 'latitude': 'lat'})
-    
+    for key, full_name in name_mapping.items():
+        if key in dataset.data_vars:
+            dataset = dataset.rename({key: full_name})
+
     # 4. time 좌표를 timedelta로 변환
     start_time = dataset.time.values[0]
     dataset['time'] = (dataset.time - start_time).astype('timedelta64[ns]')
@@ -364,54 +350,3 @@ def compare_datasets4target(ds1: xr.Dataset, ds2: xr.Dataset):
     else:
         for difference in differences:
             print(difference)
-
-def plot_variable(ds, variable, lon_range=None, lat_range=None, time_index=0, level_index=0, batch_index=0):
-    """
-    Plot a variable from an xarray Dataset with longitude on x-axis and latitude on y-axis.
-    
-    Parameters:
-    - ds: xarray.Dataset
-    - variable: str, name of the variable to plot
-    - lon_range: tuple, (min_lon, max_lon) to plot (default None, uses full range)
-    - lat_range: tuple, (min_lat, max_lat) to plot (default None, uses full range)
-    - time_index: int, index for time dimension (default 0)
-    - level_index: int, index for level dimension (default 0)
-    - batch_index: int, index for batch dimension (default 0)
-    """
-    
-    # Select the data
-    if 'time' in ds[variable].dims:
-        data = ds[variable].isel(time=time_index)
-    else:
-        data = ds[variable]
-    
-    if 'level' in data.dims:
-        data = data.isel(level=level_index)
-    
-    if 'batch' in data.dims:
-        data = data.isel(batch=batch_index)
-    
-    # Apply lat/lon range if specified
-    if lon_range:
-        data = data.sel(lon=slice(*lon_range))
-    if lat_range:
-        data = data.sel(lat=slice(*lat_range))
-    
-    # Create the plot
-    plt.figure(figsize=(30, 15))
-    
-    data.plot(x='lon', y='lat')
-    
-    plt.title(f"{variable} - Time: {ds.time.values[time_index]}, Level: {ds.level.values[level_index]}")
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-    
-    plt.colorbar(label=variable)
-    
-    # Add grid lines
-    plt.grid(True, linestyle='--', alpha=0.6)
-    
-    # Invert y-axis for latitude (optional, but common in geographic plots)
-    plt.gca().invert_yaxis()
-    
-    plt.show()
