@@ -56,9 +56,8 @@ def transform_dataset(dataset):
         'latitude': 'lat'
     }
     
-    for key, full_name in name_mapping.items():
-        if key in dataset.data_vars:
-            dataset = dataset.rename({key: full_name})
+    dataset = dataset.rename({k: v for k, v in name_mapping.items() 
+                              if k in dataset.variables or k in dataset.coords})
 
     # 4. time 좌표를 timedelta로 변환
     start_time = dataset.time.values[0]
@@ -68,16 +67,16 @@ def transform_dataset(dataset):
     dataset.coords['datetime'] = ('time', pd.date_range(start=start_time, periods=len(dataset.time), freq='6h'))
     dataset['datetime'] = dataset['datetime'].expand_dims({'batch': [0]}, axis=0)
     
-    # 6. geopotential_at_surface 처리
-    if 'geopotential_at_surface' in dataset:
-        dataset['geopotential_at_surface'] = dataset['geopotential_at_surface'].isel(time=0, drop=True)
+    for var in ['geopotential_at_surface', 'land_sea_mask']:
+        if var in dataset:
+            dataset[var] = dataset[var].isel(time=0, drop=True)
+            if 'batch' in dataset[var].dims:
+                dataset[var] = dataset[var].squeeze('batch')
     
-    # 7. land_sea_mask 처리
     if 'lsm' in dataset:
         dataset = dataset.rename({'lsm': 'land_sea_mask'})
-        dataset['land_sea_mask'] = dataset['land_sea_mask'].isel(time=0, drop=True)
     
-    return dataset
+    return dataset.reindex(lat=dataset.lat[::-1])
 
 def create_forcing_dataset(time_steps, resolution, start_time):
     lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
