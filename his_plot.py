@@ -103,3 +103,14 @@ def plot(args):
     plt.savefig(f'{file_path}', dpi=300, bbox_inches='tight')
     plt.close("all")
     print(f'{file_path} saved')
+
+
+def save_gif(image_frames, save_path, duration):
+    image_frames[0].save(save_path,
+                         format='GIF',
+                         append_images=image_frames[1:],
+                         # save_all : 모든 프레임을 저장할 것인지
+                         save_all=True,
+                         # duration : 프레임 간의 시간 간격 (ms)
+                         duration=duration,
+                         loop=0)
