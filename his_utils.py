@@ -4,6 +4,29 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from graphcast import data_utils
 
+# TODO: variables 여러 개 처리 가능하게 바꿔야 됨.
+def add_perturbation(original: xr.DataArray, variables: list[str], scale: float, perturb_timestep: list = [0, 1]):
+    result = original.copy()
+
+    for i in perturb_timestep:
+        current_time = original.time.isel(time=i).values.astype('datetime64')
+        hour = str(current_time).split('T')[1][:2]
+        normal_dist = np.random.normal(loc=0, scale=1, size=original.isel(time=i).shape)
+        normal_dist = xr.DataArray(
+            data=normal_dist,
+            dims=('lat','lon'),
+            coords={
+                'lat': original.lat,
+                'lon': original.lon
+            },
+            attrs={'long_name': '2m_temperature'}
+        )
+        with xr.open_dataset(f'testdata/stats/40yr_{hour}h_std_daily.nc')['2m_temperature'] as t2m_std:   
+            perturbed = original.isel(time=i) + scale * (normal_dist * t2m_std)
+
+        result = result.where(result.time != original.time[i], perturbed)
+
+    return result
 
 def convert_scale(dataset):
     """
@@ -43,6 +66,7 @@ def transform_dataset(dataset):
         'v': 'v_component_of_wind',
         'w': 'vertical_velocity',
         'tisr': 'toa_incident_solar_radiation',
+        'lsm': 'land_sea_mask',
         'longitude': 'lon',
         'latitude': 'lat'
     }
@@ -57,15 +81,12 @@ def transform_dataset(dataset):
     # 5. datetime 좌표 추가
     dataset.coords['datetime'] = ('time', pd.date_range(start=start_time, periods=len(dataset.time), freq='6h'))
     dataset['datetime'] = dataset['datetime'].expand_dims({'batch': [0]}, axis=0)
-    
+
     for var in ['geopotential_at_surface', 'land_sea_mask']:
         if var in dataset:
             dataset[var] = dataset[var].isel(time=0, drop=True)
             if 'batch' in dataset[var].dims:
                 dataset[var] = dataset[var].squeeze('batch')
-    
-    if 'lsm' in dataset:
-        dataset = dataset.rename({'lsm': 'land_sea_mask'})
     
     return dataset.reindex(lat=dataset.lat[::-1])
 

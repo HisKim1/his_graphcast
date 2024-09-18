@@ -433,6 +433,7 @@ class GraphCast(predictor_base.Predictor):
 
   def _maybe_init(self, sample_inputs: xarray.Dataset):
     """Inits everything that has a dependency on the input coordinates."""
+    print("|| graphcast.py -> _maybe_init() init ||")
     if not self._initialized:
       self._init_mesh_properties()
       self._init_grid_properties(
@@ -442,6 +443,7 @@ class GraphCast(predictor_base.Predictor):
       self._mesh2grid_graph_structure = self._init_mesh2grid_graph()
 
       self._initialized = True
+    print("|| graphcast.py -> _maybe_init() done ||")      
 
   def _init_mesh_properties(self):
     """Inits static properties that have to do with mesh nodes."""
@@ -616,7 +618,7 @@ class GraphCast(predictor_base.Predictor):
   def _run_grid2mesh_gnn(self, grid_node_features: chex.Array,
                          ) -> tuple[chex.Array, chex.Array]:
     """Runs the grid2mesh_gnn, extracting latent mesh and grid nodes."""
-
+    print("|| graphcast.py -> _run_grid2mesh_gnn() init ||")
     # Concatenate node structural features with input features.
     batch_size = grid_node_features.shape[1]
 
@@ -667,11 +669,12 @@ class GraphCast(predictor_base.Predictor):
     grid2mesh_out = self._grid2mesh_gnn(input_graph)
     latent_mesh_nodes = grid2mesh_out.nodes["mesh_nodes"].features
     latent_grid_nodes = grid2mesh_out.nodes["grid_nodes"].features
+    print("|| graphcast.py -> _run_grid2mesh_gnn() done ||")
     return latent_mesh_nodes, latent_grid_nodes
 
   def _run_mesh_gnn(self, latent_mesh_nodes: chex.Array) -> chex.Array:
     """Runs the mesh_gnn, extracting updated latent mesh nodes."""
-
+    print("|| graphcast.py -> _run_mesh_gnn() init ||")
     # Add the structural edge features of this graph. Note we don't need
     # to add the structural node features, because these are already part of
     # the latent state, via the original Grid2Mesh gnn, however, we need
@@ -702,6 +705,7 @@ class GraphCast(predictor_base.Predictor):
         edges={mesh_edges_key: new_edges}, nodes={"mesh_nodes": nodes})
 
     # Run the GNN.
+    print("|| graphcast.py -> _run_mesh_gnn() done ||")
     return self._mesh_gnn(input_graph).nodes["mesh_nodes"].features
 
   def _run_mesh2grid_gnn(self,
@@ -749,7 +753,7 @@ class GraphCast(predictor_base.Predictor):
       forcings: xarray.Dataset,
       ) -> chex.Array:
     """xarrays -> [num_grid_nodes, batch, num_channels]."""
-
+    print("|| graphcast.py -> _inputs_to_grid_node_features() init ||")
     # xarray `Dataset` (batch, time, lat, lon, level, multiple vars)
     # to xarray `DataArray` (batch, lat, lon, channels)
     stacked_inputs = model_utils.dataset_to_stacked(inputs)
@@ -761,6 +765,7 @@ class GraphCast(predictor_base.Predictor):
     # to single numpy array with shape [lat_lon_node, batch, channels]
     grid_xarray_lat_lon_leading = model_utils.lat_lon_to_leading_axes(
         stacked_inputs)
+    print("|| graphcast.py -> _inputs_to_grid_node_features() done ||")
     return xarray_jax.unwrap(grid_xarray_lat_lon_leading.data).reshape(
         (-1,) + grid_xarray_lat_lon_leading.data.shape[2:])
 

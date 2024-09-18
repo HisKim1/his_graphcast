@@ -78,9 +78,9 @@ def plot(args):
         weighted = dataset.weighted(weights)
         mean_val = weighted.mean(('lat', 'lon'))
         # max_val = np.abs(dataset).max().values
-        std_val = weighted.std(('lat', 'lon'))
-        
-        norm = TwoSlopeNorm(vmin=-std_val, vcenter=mean_val, vmax=std_val) #     <--------------- FIX vcenter value
+        std_val = weighted.std(('lat', 'lon')).max()
+        print(f"mean: {mean_val.values}, std: {std_val.values}")
+        norm = TwoSlopeNorm(vmin=-1 * std_val, vcenter=0, vmax=1 * std_val) #     <--------------- FIX vcenter value
 
     # 차이 데이터를 지도에 그립니다.
     im = ax.pcolormesh(dataset.lon, dataset.lat, dataset.squeeze().values, 
@@ -102,7 +102,7 @@ def plot(args):
     
     plt.savefig(f'{file_path}', dpi=300, bbox_inches='tight')
     plt.close("all")
-    print(f'{file_path} saved')
+    # print(f'{file_path} saved')
 
 
 def save_gif(image_frames, save_path, duration):
