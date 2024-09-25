@@ -19,23 +19,12 @@ PRESSURE_VARIALBE = ['temperature', # saved monthly
                      ]
 
 
-name_mapping = {
-    't2m': '2m_temperature',
-    't': 'temperature',
-    'u': 'u10',
-    'v': 'v10',
-    'z': 'geopotential',
-    'q': 'specific_humidity',
-    'longitude': 'lon',
-    'latitude': 'lat',
-    'time': 'hour'
-}
-
 parser = argparse.ArgumentParser(description='run std calculator')
 parser.add_argument('--target', type=str, choices=SURFACE_VARIABLE+PRESSURE_VARIALBE, required=True)
 parser.add_argument('--is_pressure', type=int, required=True)
 
 target = parser.parse_args().target
+
 is_pressure = parser.parse_args().is_pressure
 start_year = 1979
 end_year = 2017
@@ -54,6 +43,7 @@ if target in ['specific_humidity', 'v_wind'] and bool(is_pressure):
     end_year = 1988
 elif target in ['u_wind'] and bool(is_pressure):
     end_year = 1988
+
 
 os.makedirs(output_dir, exist_ok=True)
 
@@ -75,7 +65,8 @@ def process_year(year):
     
     return results
 
-def combine():
+
+def try_this():
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         future_to_year = {executor.submit(process_year, year): year for year in range(start_year, end_year + 1)}
         
@@ -93,19 +84,33 @@ def combine():
     for hour in ['00', '06', '12', '18']:
         print(f"Combining data for {hour}:00")
         combined_data = xr.concat(datasets[hour], dim='time')
-        output_file = os.path.join(output_dir, f'40yr_{target}_{hour}h.nc')
+        output_file = os.path.join(output_dir, f'40yr_{hour}h.nc')
         print(f"Saving {output_file}")
-        combined_data = combined_data.std(dim="time")
-        combined_data = combined_data.rename({k: v for k, v in name_mapping.items() 
-                      if k in combined_data.variables or k in combined_data.coords})
         combined_data.to_netcdf(output_file)
 
     print("Processing complete.")
 
+try_this()
+
+name_mapping = {
+    't2m': '2m_temperature',
+    't': 'temperature',
+    'u': 'u10',
+    'v': 'v10',
+    'z': 'geopotential',
+    'q': 'specific_humidity',
+    'longitude': 'lon',
+    'latitude': 'lat'
+}
+
+for time in ["00", "06", "12", "18"]:
+    hxx = xr.open_dataset(f'{output_dir}/40yr_{time}h_std_daily.nc')
+    hxx = hxx.rename({k: v for k, v in name_mapping.items() 
+                      if k in hxx.variables or k in hxx.coords})
+    hxx.to_netcdf(f'{output_dir}/40yr_{time}h_std_daily.nc')
+
 import glob
-
-combine()
-
-files = sorted(glob.glob(f'{output_dir}/40yr_{target}_*h.nc'))
+files = sorted(glob.glob(f'{output_dir}/40yr_*h_std_daily.nc'))
+print(files)
 std = xr.open_mfdataset(files, combine='nested', concat_dim='hour')
-std.compute().to_netcdf(f'{output_dir}/40yr_std_daily_{target}.nc')
+std.std(dim='hour').compute().to_netcdf(f'{output_dir}/40yr_std_daily.nc')

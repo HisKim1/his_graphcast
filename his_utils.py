@@ -5,28 +5,33 @@ import matplotlib.pyplot as plt
 from graphcast import data_utils
 
 # TODO: variables 여러 개 처리 가능하게 바꿔야 됨.
-def add_perturbation(original: xr.DataArray, variables: list[str], scale: float, perturb_timestep: list = [0, 1]):
-    result = original.copy()
+def add_perturbation(original: xr.Dataset, 
+                     variables: list[str], 
+                     scale: float, 
+                     perturb_timestep: list = [0, 1]):
+    
+    with xr.open_dataset(f'testdata/stats/40yr_std_daily_4var.nc') as std: 
+        perturbed = original.copy()
+        
+        for i in perturb_timestep:
+            idx_time = original.time.isel(time=0).values.astype(np.int64)//21600
+            normal_dist = np.random.normal(loc=0, scale=1, size=original[variables[0]].isel(time=i).shape)
+            normal_dist = xr.DataArray(
+                data=normal_dist,
+                dims=('lat','lon'),
+                coords={
+                    'lat': original.lat,
+                    'lon': original.lon
+                }
+            )
+    
+            for var in variables:
+                perturbed.isel(time=i)[var] = original[var].isel(time=i) + scale * (normal_dist * std[var].isel(hour=idx_time))
+                
+        if 'perturbation' in list(perturbed.data_vars):
+            perturbed = perturbed.drop_vars('perturbation')
 
-    for i in perturb_timestep:
-        current_time = original.time.isel(time=i).values.astype('datetime64')
-        hour = str(current_time).split('T')[1][:2]
-        normal_dist = np.random.normal(loc=0, scale=1, size=original.isel(time=i).shape)
-        normal_dist = xr.DataArray(
-            data=normal_dist,
-            dims=('lat','lon'),
-            coords={
-                'lat': original.lat,
-                'lon': original.lon
-            },
-            attrs={'long_name': '2m_temperature'}
-        )
-        with xr.open_dataset(f'testdata/stats/40yr_{hour}h_std_daily.nc')['2m_temperature'] as t2m_std:   
-            perturbed = original.isel(time=i) + scale * (normal_dist * t2m_std)
-
-        result = result.where(result.time != original.time[i], perturbed)
-
-    return result
+    return perturbed
 
 def convert_scale(dataset):
     """
