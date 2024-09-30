@@ -4,12 +4,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from graphcast import data_utils
 
-# TODO: variables 여러 개 처리 가능하게 바꿔야 됨.
+# TODO: original은 들어오기 전에 squeeze batch해줘야 함!
 def add_perturbation(original: xr.Dataset, 
                      variables: list[str], 
                      scale: float, 
                      perturb_timestep: list = [0, 1]):
-    
+    if "batch" in original.dims:
+        original = original.squeeze("batch")
+
     with xr.open_dataset(f'testdata/stats/40yr_std_daily_4var.nc') as std: 
         perturbed = original.copy()
         
@@ -31,6 +33,13 @@ def add_perturbation(original: xr.Dataset,
         if 'perturbation' in list(perturbed.data_vars):
             perturbed = perturbed.drop_vars('perturbation')
 
+    perturbed = perturbed.transpose('time', 'lat', 'lon', 'level').expand_dims('batch')
+    if 'batch' not in perturbed['datetime'].dims:
+        perturbed['datetime'] = perturbed['datetime'].expand_dims({'batch': [0]}, axis=0)
+
+    for var in ['geopotential_at_surface', 'land_sea_mask']:
+        if var in perturbed and 'batch' in perturbed[var].dims:
+            perturbed[var] = perturbed[var].squeeze('batch')
     return perturbed
 
 def convert_scale(dataset):
@@ -142,15 +151,15 @@ def create_forcing_dataset(time_steps, resolution, start_time):
 
         # 'batch' 차원을 추가한 새로운 데이터 배열 생성
         new_shape = (1,) + current_data.shape
-        new_data = np.zeros(new_shape, dtype=current_data.dtype)
-        new_data[0] = current_data
+        perturbed = np.zeros(new_shape, dtype=current_data.dtype)
+        perturbed[0] = current_data
 
         # 새로운 차원 순서 정의 ('batch'를 첫 번째로)
         new_dims = ('batch',) + current_dims
 
         # 새로운 DataArray 생성 및 할당 (coordinate는 추가하지 않음)
         ds[var] = xr.DataArray(
-            data=new_data,
+            data=perturbed,
             dims=new_dims,
             coords={dim: ds[dim] for dim in current_dims}  # 'batch'는 coordinate에 포함하지 않음
         )
