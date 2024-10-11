@@ -1,9 +1,9 @@
 #!/bin/bash
 
 model="original"
-eval_steps=30
-input_files=$(ls ~/graphcast/testdata/2021-06-26/ERA5_4*)
-output_dir="~/graphcast/testdata/2021-06-26"
+eval_steps=40
+input_files=$(ls ~/graphcast/testdata/2021-06-21/ERA5_4*)
+output_dir="~/graphcast/testdata/2021-06-21"
 
 echo "Input files: ${input_files}"
 echo "============="
@@ -20,4 +20,4 @@ for input_file in $input_files; do
     echo "============="
 done
 
-python ~/graphcast/GC_run.py --input ~/graphcast/testdata/2021-06-26/ERA5_input.nc --output ~/graphcast/testdata/2021-06-26/GC_output.nc --model original --eval_steps 30
+python ~/graphcast/GC_run.py --input ~/graphcast/testdata/2021-06-21/ERA5_input.nc --output ~/graphcast/testdata/2021-06-21/GC_output.nc --model original --eval_steps 40

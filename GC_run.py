@@ -51,10 +51,9 @@ model_type = {
    "small" : 'GraphCast_small - ERA5 1979-2015 - resolution 1.0 - pressure levels 13 - mesh 2to5 - precipitation input and output.npz'
 }
 
-# TODO: 모델 하나 골라 로드하기
 pretrained_model = model_type[parser.parse_args().model]
 
-with gcs_bucket.blob(f"params/{pretrained_model}").open("rb") as f:
+with open(f"/home/hiskim1/graphcast/params/{pretrained_model}", "rb") as f:
     ckpt = checkpoint.load(f, graphcast.CheckPoint)
 
     
@@ -68,8 +67,6 @@ task_config = ckpt.task_config
 
 # 모델 설명 출력
 print("Model description:\n", ckpt.description, "\n")
-# 모델 라이선스 출력
-print("Model license:\n", ckpt.license, "\n")
 
 print("Model config:\n", model_config, "\n")
 
@@ -80,13 +77,10 @@ print("1 ================================")
 file_name = parser.parse_args().input
 
 dataset = xarray.open_dataset(file_name)
-total_time_steps = dataset.sizes["time"] - 2
-
-eval_steps =2
 
 eval_inputs, _, _ = data_utils.extract_inputs_targets_forcings(
     dataset, 
-    target_lead_times=slice("6h", f"{eval_steps * 6}h"), 
+    target_lead_times=slice("6h", "0h"), 
     **dataclasses.asdict(task_config)
 )
 
@@ -183,7 +177,6 @@ assert model_config.resolution in (0, 360. / eval_inputs.sizes["lon"]), (
     "Model resolution doesn't match the data resolution. You likely want to "
     "re-filter the dataset list, and download the correct data.")
 print("4 ================================")
-print(jax.devices())
 
 # Perform autoregressive rollout to generate predictions
 predictions = rollout.chunked_prediction(
@@ -196,3 +189,5 @@ predictions = rollout.chunked_prediction(
 
 # Display the predictions
 predictions.to_netcdf(parser.parse_args().output)
+
+print("5 ================================")
