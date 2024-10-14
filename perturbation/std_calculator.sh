@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the variables
-SURFACE_VARIABLES=("u_wind" "v_wind" "total_precip" "sea_level_pressure" "t2m")
+SURFACE_VARIABLES=( "sea_level_pressure" "t2m" "u_wind" "v_wind")
 PRESSURE_VARIABLES=("temperature" "u_wind" "v_wind", "specific_humidity")
 
 # need "geopotential" /   missing
