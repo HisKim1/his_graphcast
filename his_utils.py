@@ -14,6 +14,7 @@ from jax.config import config
 config.update("jax_platform_name", "gpu")
 
 REGION_BOUNDARIES = {
+    "global": {"lat": (-90, 90), "lon": (0, 360)},
     "Northern Hemisphere Extra-tropics": {"lat": (20, 90)},
     "Southern Hemisphere Extra-tropics": {"lat": (-90, -20)},
     "Tropics": {"lat": (-20, 20)},
