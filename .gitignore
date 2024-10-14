@@ -14,3 +14,4 @@ testdata/
 era5*
 
 figure/
+*.npz

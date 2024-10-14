@@ -1,7 +1,6 @@
 #!/bin/bash
-
 # Define the variables
-SURFACE_VARIABLES=( "sea_level_pressure" "t2m" "u_wind" "v_wind")
+SURFACE_VARIABLES=("v_wind" "sea_level_pressure" "t2m")
 PRESSURE_VARIABLES=("temperature" "u_wind" "v_wind", "specific_humidity")
 
 # need "geopotential" /   missing
@@ -11,7 +10,7 @@ run_std_calculator() {
     local variable=$1
     local is_pressure=$2
     echo "Processing $variable..."
-    python std_calculator2.py --target "$variable" --is_pressure "$is_pressure"
+    python std_calculator.py --target "$variable" --is_pressure "$is_pressure"
     
     if [ $? -ne 0 ]; then
         echo "Error processing $variable"

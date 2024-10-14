@@ -4,29 +4,304 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from graphcast import data_utils
 
-# TODO: variables 여러 개 처리 가능하게 바꿔야 됨.
-def add_perturbation(original: xr.DataArray, variables: list[str], scale: float, perturb_timestep: list = [0, 1]):
-    result = original.copy()
+import numpy as np
+import xarray as xr
 
-    for i in perturb_timestep:
-        current_time = original.time.isel(time=i).values.astype('datetime64')
-        hour = str(current_time).split('T')[1][:2]
-        normal_dist = np.random.normal(loc=0, scale=1, size=original.isel(time=i).shape)
-        normal_dist = xr.DataArray(
-            data=normal_dist,
-            dims=('lat','lon'),
-            coords={
-                'lat': original.lat,
-                'lon': original.lon
-            },
-            attrs={'long_name': '2m_temperature'}
-        )
-        with xr.open_dataset(f'testdata/stats/40yr_{hour}h_std_daily.nc')['2m_temperature'] as t2m_std:   
-            perturbed = original.isel(time=i) + scale * (normal_dist * t2m_std)
+import jax.numpy as jnp
+from jax import random, device_put
+from jax.config import config
 
-        result = result.where(result.time != original.time[i], perturbed)
+config.update("jax_platform_name", "gpu")
 
-    return result
+REGION_BOUNDARIES = {
+    "global": {"lat": (-90, 90), "lon": (0, 360)},
+    "Northern Hemisphere Extra-tropics": {"lat": (20, 90)},
+    "Southern Hemisphere Extra-tropics": {"lat": (-90, -20)},
+    "Tropics": {"lat": (-20, 20)},
+    "Arctic": {"lat": (60, 90)},
+    "Antarctic": {"lat": (-90, -60)},
+    "Europe": {"lat": (35, 75), "lon": (-12.5, 42.5)},
+    "North America": {"lat": (25, 60), "lon": (-120, -75)},
+    "North Atlantic": {"lat": (25, 60), "lon": (-70, -20)},
+    "North Pacific": {"lat": (25, 60), "lon": (145, -130)},
+    "East Asia": {"lat": (25, 60), "lon": (102.5, 150)},
+    "AusNZ": {"lat": (-45, -12.5), "lon": (120, 175)}
+}
+
+def add_region_specific_perturbation(original: xr.Dataset, 
+                                     variables: list[str], 
+                                     scale: float, 
+                                     perturb_timestep: list = [0, 1],
+                                     region_list: list[str] = [],
+                                     #if wipe_out is True, scale is the value to set
+                                     wipe_out: bool = False): 
+    # Remove 'batch' dimension if present
+    if "batch" in original.dims:
+        original = original.squeeze("batch")
+
+    # Move original dataset to GPU using JAX
+    original_data = {var: device_put(jnp.array(original[var].values)) for var in variables}
+    lat_values = device_put(jnp.array(original.lat.values))
+    lon_values = device_put(jnp.array(original.lon.values))
+
+    # Handle longitude values, making sure they are in the correct range
+    if lon_values.min() < 0:
+        lon_values = (lon_values + 360) % 360  # Convert range from [-180, 180] to [0, 360]
+
+    with xr.open_dataset("testdata/ERA5_std_by_level.nc") as std:
+        std_data = {}
+        for var in variables:
+            if var in std:
+                std_data[var] = device_put(jnp.array(std[var].values))
+            else:
+                # If the variable is not in std, set a default scalar value
+                std_data[var] = device_put(jnp.array(1.0))  # Or any default value you deem appropriate
+
+        perturbed = original.copy()
+        
+        # Initialize lists to collect indices
+        selected_lat_indices = []
+        selected_lon_indices = []
+        
+        for region in region_list:
+            if region in REGION_BOUNDARIES:
+                region_bounds = REGION_BOUNDARIES[region]
+                
+                # Latitude indices
+                lat_min, lat_max = region_bounds["lat"]
+                lat_mask = (lat_values >= lat_min) & (lat_values <= lat_max)
+                lat_indices = jnp.where(lat_mask)[0]
+                if lat_indices.size == 0:
+                    continue  # Skip if no matching latitudes are found
+                
+                # Longitude indices
+                if "lon" in region_bounds:
+                    lon_min, lon_max = region_bounds["lon"]
+                    if lon_min < 0:
+                        lon_min = (lon_min + 360) % 360
+                    if lon_max < 0:
+                        lon_max = (lon_max + 360) % 360
+                        
+                    if lon_min < lon_max:
+                        lon_mask = (lon_values >= lon_min) & (lon_values <= lon_max)
+                    else:  # Handle wrapping around the 0-degree longitude
+                        lon_mask = (lon_values >= lon_min) | (lon_values <= lon_max)
+                else:
+                    lon_mask = jnp.ones_like(lon_values, dtype=bool)  # Select all longitudes
+                
+                lon_indices = jnp.where(lon_mask)[0]
+                if lon_indices.size == 0:
+                    continue  # Skip if no matching longitudes are found
+                
+                # Create a grid of lat/lon indices
+                lat_grid, lon_grid = jnp.meshgrid(lat_indices, lon_indices, indexing='ij')
+                selected_lat_indices.append(lat_grid.flatten())
+                selected_lon_indices.append(lon_grid.flatten())
+        
+        if not selected_lat_indices or not selected_lon_indices:
+            # If no indices are selected, return the original dataset without modifications
+            return perturbed
+
+        # Concatenate indices from all regions
+        selected_lat_indices = jnp.concatenate(selected_lat_indices)
+        selected_lon_indices = jnp.concatenate(selected_lon_indices)
+
+        # Create a normal distribution for the selected points using JAX
+        key = random.PRNGKey(0)
+        key, subkey = random.split(key)
+        normal_dist = random.normal(subkey, shape=(selected_lat_indices.size,))
+
+        # Convert perturb_timestep to JAX array for efficient broadcasting
+        perturb_timesteps = jnp.array(perturb_timestep)
+
+        # Apply perturbations using matrix operations
+        for var in variables:
+            std_var = std_data[var]
+            data_var = original_data[var]
+
+            if 'level' in original[var].dims:
+                for level_idx in range(original.level.size):
+                    if wipe_out:
+                        data_var = data_var.at[
+                            perturb_timesteps[:, None], level_idx, selected_lat_indices[None, :], selected_lon_indices[None, :]
+                        ].set(scale)
+                    else:
+                        if std_var.ndim == 3:
+                            std_values = std_var[level_idx, selected_lat_indices, selected_lon_indices]
+                        elif std_var.ndim == 1:
+                            std_values = std_var[level_idx]
+                        elif std_var.ndim == 0:
+                            std_values = std_var
+                        else:
+                            raise ValueError(f"Unexpected dimensions for std_data[{var}]: {std_var.shape}")
+                        perturbation = scale * normal_dist[None, :] * std_values
+                        data_var = data_var.at[
+                            perturb_timesteps[:, None], level_idx, selected_lat_indices[None, :], selected_lon_indices[None, :]
+                        ].add(perturbation)
+                original_data[var] = data_var
+            else:
+                if wipe_out:
+                    data_var = data_var.at[
+                        perturb_timesteps[:, None], selected_lat_indices[None, :], selected_lon_indices[None, :]
+                    ].set(scale)
+                else:
+                    if std_var.ndim == 2:
+                        std_values = std_var[selected_lat_indices, selected_lon_indices]
+                    elif std_var.ndim == 0:
+                        std_values = std_var
+                    else:
+                        raise ValueError(f"Unexpected dimensions for std_data[{var}]: {std_var.shape}")
+                    perturbation = scale * normal_dist[None, :] * std_values
+                    data_var = data_var.at[
+                        perturb_timesteps[:, None], selected_lat_indices[None, :], selected_lon_indices[None, :]
+                    ].add(perturbation)
+                original_data[var] = data_var
+
+        # Update the perturbed dataset with the modified values
+        for var in variables:
+            perturbed[var].values = np.array(original_data[var])
+                
+        # Drop 'perturbation' variable if it exists
+        if 'perturbation' in perturbed.data_vars:
+            perturbed = perturbed.drop_vars('perturbation')
+
+    # Transpose and expand dims as needed
+    perturbed = perturbed.transpose('time', 'lat', 'lon', 'level').expand_dims('batch')
+    if 'batch' not in perturbed['datetime'].dims:
+        perturbed['datetime'] = perturbed['datetime'].expand_dims({'batch': [0]}, axis=0)
+
+    # Squeeze 'batch' dimension for specific variables if needed
+    for var in ['geopotential_at_surface', 'land_sea_mask']:
+        if var in perturbed and 'batch' in perturbed[var].dims:
+            perturbed[var] = perturbed[var].squeeze('batch')
+
+    return perturbed
+
+
+
+def add_region_perturbation(original: xr.Dataset, 
+                            variables: list[str], 
+                            scale: float, 
+                            perturb_timestep: list = [0, 1],
+                            num_points: int = 100,
+                            wipe_out: bool = False):
+    # Remove 'batch' dimension if present
+    if "batch" in original.dims:
+        original = original.squeeze("batch")
+
+    # Move original dataset to GPU using JAX
+    original_data = {var: device_put(jnp.array(original[var].values)) for var in variables}
+    lat_values = device_put(jnp.array(original.lat.values))
+    lon_values = device_put(jnp.array(original.lon.values))
+
+    with xr.open_dataset("testdata/ERA5_std_by_level.nc") as std:
+        std_data = {var: device_put(jnp.array(std[var].values)) for var in variables}
+        perturbed = original.copy()
+        
+        # Generate random lat/lon pairs to perturb from the entire grid using JAX
+        key = random.PRNGKey(0)
+        lat_lon_choices = random.choice(key, lat_values.size * lon_values.size, shape=(num_points,), replace=False)
+        lat_indices, lon_indices = jnp.unravel_index(lat_lon_choices, (lat_values.size, lon_values.size))
+        selected_lat_indices = lat_indices
+        selected_lon_indices = lon_indices
+
+        # Create a normal distribution for the selected points using JAX
+        key, subkey = random.split(key)
+        normal_dist = random.normal(subkey, shape=(num_points,))
+
+        # Convert perturb_timestep to JAX array for efficient broadcasting
+        perturb_timesteps = jnp.array(perturb_timestep)
+
+        # Apply perturbations using matrix operations
+        for var in variables:
+            if 'level' in original[var].dims:
+                for level_idx in range(original.level.size):
+                    if wipe_out:
+                        # Overwrite with std value
+                        original_data[var] = original_data[var].at[
+                            perturb_timesteps[:, None], level_idx, selected_lat_indices[None, :], selected_lon_indices[None, :]
+                        ].set(std_data[var][level_idx])
+                    else:
+                        # Broadcast perturbation over all specified timesteps and selected lat/lon points
+                        original_data[var] = original_data[var].at[
+                            perturb_timesteps[:, None], level_idx, selected_lat_indices[None, :], selected_lon_indices[None, :]
+                        ].add(scale * normal_dist[None, :] * std_data[var][level_idx])
+            else:
+                if wipe_out:
+                    # Overwrite with std value
+                    original_data[var] = original_data[var].at[
+                        perturb_timesteps[:, None], selected_lat_indices[None, :], selected_lon_indices[None, :]
+                    ].set(std_data[var])
+                else:
+                    # Apply perturbation without level dimension
+                    original_data[var] = original_data[var].at[
+                        perturb_timesteps[:, None], selected_lat_indices[None, :], selected_lon_indices[None, :]
+                    ].add(scale * normal_dist[None, :] * std_data[var])
+
+        # Update the perturbed dataset with the modified values
+        for var in variables:
+            perturbed[var].values = np.array(original_data[var])
+                
+        # Drop 'perturbation' variable if it exists
+        if 'perturbation' in list(perturbed.data_vars):
+            perturbed = perturbed.drop_vars('perturbation')
+
+    # Transpose and expand dims as needed
+    perturbed = perturbed.transpose('time', 'lat', 'lon', 'level').expand_dims('batch')
+    if 'batch' not in perturbed['datetime'].dims:
+        perturbed['datetime'] = perturbed['datetime'].expand_dims({'batch': [0]}, axis=0)
+
+    # Squeeze 'batch' dimension for specific variables if needed
+    for var in ['geopotential_at_surface', 'land_sea_mask']:
+        if var in perturbed and 'batch' in perturbed[var].dims:
+            perturbed[var] = perturbed[var].squeeze('batch')
+
+    return perturbed
+
+
+# Add Gaussian perturbation to the original dataset.
+def add_Gaussian_perturbation(original: xr.Dataset, 
+                     variables: list[str], 
+                     scale: float, 
+                     perturb_timestep: list = [0, 1]):
+   
+   
+    if "batch" in original.dims:
+        original = original.squeeze("batch")
+
+    with xr.open_dataset("testdata/ERA5_std_by_level.nc") as std: 
+        perturbed = original.copy()
+        
+        for i in perturb_timestep:
+            normal_dist = np.random.normal(loc=0, scale=1, size=original[variables[0]].isel(time=i).shape)
+            normal_dist = xr.DataArray(
+                data=normal_dist,
+                dims=('lat','lon'),
+                coords={
+                    'lat': original.lat,
+                    'lon': original.lon
+                }
+            )
+    
+            for var in variables:
+                if 'level' in original[var].dims:
+                    for level in original.level:
+                        perturbed.isel(time=i, level=level)[var] = original[var].isel(time=i, level=level) + scale * (normal_dist * std[var].isel(level=level))
+                else:                           
+                    perturbed.isel(time=i)[var] = original[var].isel(time=i) + scale * (normal_dist * std[var])
+                
+        if 'perturbation' in list(perturbed.data_vars):
+            perturbed = perturbed.drop_vars('perturbation')
+
+    perturbed = perturbed.transpose('time', 'lat', 'lon', 'level').expand_dims('batch')
+    if 'batch' not in perturbed['datetime'].dims:
+        perturbed['datetime'] = perturbed['datetime'].expand_dims({'batch': [0]}, axis=0)
+
+    for var in ['geopotential_at_surface', 'land_sea_mask']:
+        if var in perturbed and 'batch' in perturbed[var].dims:
+            perturbed[var] = perturbed[var].squeeze('batch')
+    return perturbed
+
 
 def convert_scale(dataset):
     """
@@ -137,15 +412,15 @@ def create_forcing_dataset(time_steps, resolution, start_time):
 
         # 'batch' 차원을 추가한 새로운 데이터 배열 생성
         new_shape = (1,) + current_data.shape
-        new_data = np.zeros(new_shape, dtype=current_data.dtype)
-        new_data[0] = current_data
+        perturbed = np.zeros(new_shape, dtype=current_data.dtype)
+        perturbed[0] = current_data
 
         # 새로운 차원 순서 정의 ('batch'를 첫 번째로)
         new_dims = ('batch',) + current_dims
 
         # 새로운 DataArray 생성 및 할당 (coordinate는 추가하지 않음)
         ds[var] = xr.DataArray(
-            data=new_data,
+            data=perturbed,
             dims=new_dims,
             coords={dim: ds[dim] for dim in current_dims}  # 'batch'는 coordinate에 포함하지 않음
         )
