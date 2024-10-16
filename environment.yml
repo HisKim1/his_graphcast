@@ -387,7 +387,6 @@ dependencies:
       - typing-extensions==4.12.2
       - tzdata==2024.1
       - tzlocal==5.2
-      - weatherbench2==0.2.0
       - xarray==2023.7.0
       - xarray-beam==0.6.3
       - zarr==2.18.2
