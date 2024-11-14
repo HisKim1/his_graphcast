@@ -27,7 +27,7 @@ def binary_string(combo):
     # Convert the selected combination to a binary string
     return ''.join(['1' if var in combo else '0' for var in variables])
 
-# Step 1: Select 1 or 2 variables
+# Step 1: Select 1 
 one_two_variable_combinations = []
 for r in [1]:
     one_two_variable_combinations += list(itertools.combinations(variables, r))
