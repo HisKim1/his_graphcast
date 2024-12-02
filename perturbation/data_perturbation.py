@@ -7,7 +7,7 @@ from lib import his_utils
 import os
 import itertools
 
-scales = [0.001, 1]
+scales = [0.001]
 
 ten_persent = 103680
 
@@ -45,7 +45,7 @@ selected_combinations = one_two_variable_combinations + all_but_one_variable_com
 for combo in selected_combinations:
     combo_string = binary_string(combo)
     for scale in scales:
-        for n in range(1, 11):
+        for n in range(1, 11, 2):
             # Generate a descriptive filename
             wipeout_str = "scale"
             filename = f"ERA5_{combo_string}_{scale}_{n}p.nc"
