@@ -53,7 +53,7 @@ model_type = {
 
 pretrained_model = model_type[parser.parse_args().model]
 
-with open(f"/home/hiskim1/graphcast/params/{pretrained_model}", "rb") as f:
+with open(f"/home/hiskim1/his_graphcast/params/{pretrained_model}", "rb") as f:
     ckpt = checkpoint.load(f, graphcast.CheckPoint)
 
     
@@ -85,9 +85,9 @@ eval_inputs, _, _ = data_utils.extract_inputs_targets_forcings(
 )
 
 print("2 ================================")
-diffs_stddev_by_level = xarray.open_dataset("/home/hiskim1/graphcast/testdata/stats/stats_diffs_stddev_by_level.nc")
-mean_by_level = xarray.open_dataset("/home/hiskim1/graphcast/testdata/stats/stats_mean_by_level.nc")
-stddev_by_level = xarray.open_dataset("/home/hiskim1/graphcast/testdata/stats/stats_stddev_by_level.nc")
+diffs_stddev_by_level = xarray.open_dataset("/home/hiskim1/his_graphcast/testdata/stats/stats_diffs_stddev_by_level.nc")
+mean_by_level = xarray.open_dataset("/home/hiskim1/his_graphcast/testdata/stats/stats_mean_by_level.nc")
+stddev_by_level = xarray.open_dataset("/home/hiskim1/his_graphcast/testdata/stats/stats_stddev_by_level.nc")
 
 
 eval_steps = parser.parse_args().eval_steps

@@ -4,8 +4,6 @@ import his_utils
 import os
 import itertools
 
-input_data = xr.open_dataset('testdata/2021-06-21/ERA5_input.nc')
-
 scales = [0.001, 1]
 INTMAX = np.finfo(np.float32).max
 
@@ -42,7 +40,7 @@ all_variable_combination = [tuple(variables)]  # All variables selected
 selected_combinations = one_two_variable_combinations + all_but_one_variable_combinations + all_variable_combination
 
 # Loop through selected combinations
-for combo in selected_combinations:
+for combo in reversed(selected_combinations):
     combo_string = binary_string(combo)
 
     for region_name, region_bounds in his_utils.REGION_BOUNDARIES.items():
@@ -59,7 +57,7 @@ for combo in selected_combinations:
                     continue
 
                 # Apply the perturbation to the dataset
-                dataset = xr.open_dataset('testdata/2021-06-21/ERA5_input.nc')
+                dataset = xr.open_dataset('/geodata2/S2S/DL/GC_input/2021-06-21/ERA5_input.nc')
                 perturbed_dataset = his_utils.add_region_specific_perturbation(
                     dataset, list(combo), scale, perturb_timestep=[0, 1], 
                     region_list=[region_name], wipe_out=wipe_out
