@@ -48,7 +48,7 @@ def add_region_specific_perturbation(original: xr.Dataset,
     if lon_values.min() < 0:
         lon_values = (lon_values + 360) % 360  # Convert range from [-180, 180] to [0, 360]
 
-    with xr.open_dataset("testdata/ERA5_std_by_level.nc") as std:
+    with xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/ERA5_std_by_level.nc") as std:
         std_data = {}
         for var in variables:
             if var in std:
@@ -194,7 +194,7 @@ def add_region_perturbation(original: xr.Dataset,
     lat_values = device_put(jnp.array(original.lat.values))
     lon_values = device_put(jnp.array(original.lon.values))
 
-    with xr.open_dataset("testdata/ERA5_std_by_level.nc") as std:
+    with xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/ERA5_std_by_level.nc") as std:
         std_data = {var: device_put(jnp.array(std[var].values)) for var in variables}
         perturbed = original.copy()
         
@@ -269,7 +269,7 @@ def add_Gaussian_perturbation(original: xr.Dataset,
     if "batch" in original.dims:
         original = original.squeeze("batch")
 
-    with xr.open_dataset("testdata/ERA5_std_by_level.nc") as std: 
+    with xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/ERA5_std_¿by_level.nc") as std: 
         perturbed = original.copy()
         
         for i in perturb_timestep:

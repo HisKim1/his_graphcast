@@ -80,7 +80,7 @@ def plot(args):
         # max_val = np.abs(dataset).max().values
         std_val = weighted.std(('lat', 'lon')).max()
         print(f"mean: {mean_val.values}, std: {std_val.values}")
-        norm = TwoSlopeNorm(vmin=-1 * std_val, vcenter=0, vmax=1 * std_val) #     <--------------- FIX vcenter value
+        norm = TwoSlopeNorm(vmin=mean_val.values - std_val.values, vcenter=mean_val.values, vmax=mean_val.values + std_val.values) #     <--------------- FIX vcenter value
 
     # 차이 데이터를 지도에 그립니다.
     im = ax.pcolormesh(dataset.lon, dataset.lat, dataset.squeeze().values, 
