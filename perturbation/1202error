@@ -1,0 +1,83 @@
+Traceback (most recent call last):
+  File "/home/hiskim1/graphcast/GC_run.py", line 56, in <module>
+    with open(f"/home/hiskim1/his_graphcast/params/{pretrained_model}", "rb") as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/hiskim1/his_graphcast/params/GraphCast - ERA5 1979-2017 - resolution 0.25 - pressure levels 37 - mesh 2to6 - precipitation input and output.npz'
+chmod: cannot access '/data/GC_output/percent/GC_00000000001_0.001_1p.nc': No such file or directory
+Traceback (most recent call last):
+  File "/home/hiskim1/graphcast/GC_run.py", line 56, in <module>
+    with open(f"/home/hiskim1/his_graphcast/params/{pretrained_model}", "rb") as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/hiskim1/his_graphcast/params/GraphCast - ERA5 1979-2017 - resolution 0.25 - pressure levels 37 - mesh 2to6 - precipitation input and output.npz'
+chmod: cannot access '/data/GC_output/percent/GC_00000000001_0.001_3p.nc': No such file or directory
+Traceback (most recent call last):
+  File "/home/hiskim1/graphcast/GC_run.py", line 45, in <module>
+    gcs_bucket = gcs_client.get_bucket("dm_graphcast")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/client.py", line 761, in get_bucket
+    bucket.reload(
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/bucket.py", line 1086, in reload
+    super(Bucket, self).reload(
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/_helpers.py", line 243, in reload
+    api_response = client._get_resource(
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/client.py", line 366, in _get_resource
+    return self._connection.api_request(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/_http.py", line 72, in api_request
+    return call()
+           ^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/api_core/retry.py", line 283, in retry_wrapped_func
+    return retry_target(
+           ^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/api_core/retry.py", line 190, in retry_target
+    return target()
+           ^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/_http/__init__.py", line 482, in api_request
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/_http/__init__.py", line 341, in _make_request
+    return self._do_request(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/_http/__init__.py", line 379, in _do_request
+    return self.http.request(
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/auth/transport/requests.py", line 541, in request
+    response = super(AuthorizedSession, self).request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/urllib3/connectionpool.py", line 789, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/urllib3/connection.py", line 464, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/http/client.py", line 1390, in getresponse
+    response.begin()
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/http/client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/http/client.py", line 286, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/socket.py", line 706, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/ssl.py", line 1314, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/ssl.py", line 1166, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

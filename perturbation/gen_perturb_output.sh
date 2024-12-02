@@ -9,7 +9,6 @@ output_dir="/data/GC_output/percent"
 echo ========================================================
 cat filelist.txt | while read input_file
 do
-    echo ">>>> $input_file"
     # std_value=$(basename "$input_file" | grep -oP '(?<=_)\d+(\.\d+)?(?=std\.nc)')
     # echo "std: $std_value"
     # output_file="${output_dir}/GC_${std_value}std.nc"
@@ -21,9 +20,8 @@ do
         echo "Output file exists: $output_file"
         continue
     fi
-
-    # echo "Output file: $output_file"
-    python ~/graphcast/GC_run.py --input "$input_file" --output "$output_file" --model "$model" --eval_steps "$eval_steps"
+    
+    python ~/graphcast/GC_run.py --input "$input_dir$input_file" --output "$output_file" --model "$model" --eval_steps "$eval_steps"
     chmod 777 "$output_file"
     echo "========================================================"
 done 
