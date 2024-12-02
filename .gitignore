@@ -15,3 +15,9 @@ era5*
 
 figure/
 *.npz
+
+GIF/
+
+*.html
+
+spectra/dataset_paper/
