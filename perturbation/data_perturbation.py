@@ -7,7 +7,7 @@ from lib import his_utils
 import os
 import itertools
 
-scales = [0.001]
+scales = [1]
 
 ten_persent = 103680
 
@@ -46,10 +46,11 @@ for combo in selected_combinations:
     combo_string = binary_string(combo)
     for scale in scales:
         for n in range(1, 11, 2):
+        for n in range(1, 11, 2):
             # Generate a descriptive filename
             wipeout_str = "scale"
             filename = f"ERA5_{combo_string}_{scale}_{n}p.nc"
-            if os.path.exists(os.path.join('/data/GC_input/percent', filename)):
+            if os.path.exists(os.path.join('/geodata2/S2S/DL/GC_input/percent', filename)):
                 print(f"Skipping: {filename}")
                 continue
             # Apply the perturbation to the dataset
@@ -58,7 +59,7 @@ for combo in selected_combinations:
                 dataset, list(combo), scale, perturb_timestep=[0, 1], num_points=ten_persent*n, wipe_out=False
             )
             # Save to a new compressed file
-            output_path = os.path.join('/data/GC_input/percent', filename)
+            output_path = os.path.join('/geodata2/S2S/DL/GC_input/percent', filename)
             encoding = {var: {'zlib': True, 'complevel': 5} for var in perturbed_dataset.variables}
             perturbed_dataset.to_netcdf(output_path, encoding=encoding)
             print(f"Created: {filename}")
