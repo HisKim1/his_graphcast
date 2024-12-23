@@ -7,7 +7,7 @@ input_dir="/data/GC_input/percent2/"
 output_dir="/data/GC_output/percent2"
 
 echo ========================================================
-cat filelist.txt | while read input_file
+tac filelist.txt | while read input_file
 do
     # std_value=$(basename "$input_file" | grep -oP '(?<=_)\d+(\.\d+)?(?=std\.nc)')
     # echo "std: $std_value"

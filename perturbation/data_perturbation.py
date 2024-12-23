@@ -41,7 +41,7 @@ all_variable_combination = [tuple(variables)]  # All variables selected
 selected_combinations = [('2m_temperature',)] #+ all_but_one_variable_combinations + all_variable_combination
 
 # Loop through selected combinations
-for combo in selected_combinations:
+for combo in  [('2m_temperature',)]:
     combo_string = binary_string(combo)
     for scale in scales:
         for n in range(1, 11, 2):
