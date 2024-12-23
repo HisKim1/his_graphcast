@@ -2,12 +2,11 @@ import xarray as xr
 import numpy as np
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
-from lib import his_utils
+import his_utils
 import os
 import itertools
 
-scales = [1]
+scales = [0.01, 0.05, 0.1, 0.5]
 
 ten_persent = 103680
 
@@ -39,18 +38,17 @@ all_but_one_variable_combinations = list(itertools.combinations(variables, len(v
 all_variable_combination = [tuple(variables)]  # All variables selected
 
 # Combine all cases
-selected_combinations = one_two_variable_combinations + all_but_one_variable_combinations + all_variable_combination
+selected_combinations = [('2m_temperature',)] #+ all_but_one_variable_combinations + all_variable_combination
 
 # Loop through selected combinations
 for combo in selected_combinations:
     combo_string = binary_string(combo)
     for scale in scales:
         for n in range(1, 11, 2):
-        for n in range(1, 11, 2):
             # Generate a descriptive filename
             wipeout_str = "scale"
-            filename = f"ERA5_{combo_string}_{scale}_{n}p.nc"
-            if os.path.exists(os.path.join('/geodata2/S2S/DL/GC_input/percent', filename)):
+            filename = f"ERA5_{combo_string}_{scale}_{n}0.nc"
+            if os.path.exists(os.path.join('/geodata2/S2S/DL/GC_input/percent2', filename)):
                 print(f"Skipping: {filename}")
                 continue
             # Apply the perturbation to the dataset
@@ -59,7 +57,7 @@ for combo in selected_combinations:
                 dataset, list(combo), scale, perturb_timestep=[0, 1], num_points=ten_persent*n, wipe_out=False
             )
             # Save to a new compressed file
-            output_path = os.path.join('/geodata2/S2S/DL/GC_input/percent', filename)
+            output_path = os.path.join('/geodata2/S2S/DL/GC_input/percent2', filename)
             encoding = {var: {'zlib': True, 'complevel': 5} for var in perturbed_dataset.variables}
             perturbed_dataset.to_netcdf(output_path, encoding=encoding)
             print(f"Created: {filename}")
