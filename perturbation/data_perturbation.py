@@ -46,7 +46,6 @@ for combo in selected_combinations:
     combo_string = binary_string(combo)
     for scale in scales:
         for n in range(1, 11, 2):
-        for n in range(1, 11, 2):
             # Generate a descriptive filename
             wipeout_str = "scale"
             filename = f"ERA5_{combo_string}_{scale}_{n}p.nc"

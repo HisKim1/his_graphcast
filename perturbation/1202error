@@ -1,83 +1,490 @@
-Traceback (most recent call last):
-  File "/home/hiskim1/graphcast/GC_run.py", line 56, in <module>
-    with open(f"/home/hiskim1/his_graphcast/params/{pretrained_model}", "rb") as f:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '/home/hiskim1/his_graphcast/params/GraphCast - ERA5 1979-2017 - resolution 0.25 - pressure levels 37 - mesh 2to6 - precipitation input and output.npz'
-chmod: cannot access '/data/GC_output/percent/GC_00000000001_0.001_1p.nc': No such file or directory
-Traceback (most recent call last):
-  File "/home/hiskim1/graphcast/GC_run.py", line 56, in <module>
-    with open(f"/home/hiskim1/his_graphcast/params/{pretrained_model}", "rb") as f:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '/home/hiskim1/his_graphcast/params/GraphCast - ERA5 1979-2017 - resolution 0.25 - pressure levels 37 - mesh 2to6 - precipitation input and output.npz'
-chmod: cannot access '/data/GC_output/percent/GC_00000000001_0.001_3p.nc': No such file or directory
-Traceback (most recent call last):
-  File "/home/hiskim1/graphcast/GC_run.py", line 45, in <module>
-    gcs_bucket = gcs_client.get_bucket("dm_graphcast")
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/client.py", line 761, in get_bucket
-    bucket.reload(
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/bucket.py", line 1086, in reload
-    super(Bucket, self).reload(
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/_helpers.py", line 243, in reload
-    api_response = client._get_resource(
-                   ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/client.py", line 366, in _get_resource
-    return self._connection.api_request(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/storage/_http.py", line 72, in api_request
-    return call()
-           ^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/api_core/retry.py", line 283, in retry_wrapped_func
-    return retry_target(
-           ^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/api_core/retry.py", line 190, in retry_target
-    return target()
-           ^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/_http/__init__.py", line 482, in api_request
-    response = self._make_request(
-               ^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/_http/__init__.py", line 341, in _make_request
-    return self._do_request(
-           ^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/cloud/_http/__init__.py", line 379, in _do_request
-    return self.http.request(
-           ^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/google/auth/transport/requests.py", line 541, in request
-    response = super(AuthorizedSession, self).request(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/requests/sessions.py", line 589, in request
-    resp = self.send(prep, **send_kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/requests/sessions.py", line 703, in send
-    r = adapter.send(request, **kwargs)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/requests/adapters.py", line 667, in send
-    resp = conn.urlopen(
-           ^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/urllib3/connectionpool.py", line 789, in urlopen
-    response = self._make_request(
-               ^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/urllib3/connectionpool.py", line 536, in _make_request
-    response = conn.getresponse()
-               ^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/urllib3/connection.py", line 464, in getresponse
-    httplib_response = super().getresponse()
-                       ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/http/client.py", line 1390, in getresponse
-    response.begin()
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/http/client.py", line 325, in begin
-    version, status, reason = self._read_status()
-                              ^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/http/client.py", line 286, in _read_status
-    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/socket.py", line 706, in readinto
-    return self._sock.recv_into(b)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/ssl.py", line 1314, in recv_into
-    return self.read(nbytes, buffer)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/ssl.py", line 1166, in read
-    return self._sslobj.read(len, buffer)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-KeyboardInterrupt
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+2024-12-03 03:45:49.641192: E external/xla/xla/service/slow_operation_alarm.cc:65] Constant folding an instruction is taking > 1s:
+
+  %pad.1 = bf16[40962,1,474]{2,1,0} pad(bf16[40962,1,3]{2,1,0} %constant.348, bf16[] %constant.349), padding=0_0x0_0x471_0, metadata={op_name="jit(<unnamed wrapped function>)/jit(main)/while/body/concatenate[dimension=2]" source_file="/home/hiskim1/his_graphcast/graphcast/graphcast.py" source_line=645}
+
+This isn't necessarily a bug; constant-folding is inherently a trade-off between compilation time and speed at runtime. XLA has some guards that attempt to keep constant folding from taking too long, but fundamentally you'll always be able to come up with an input program that takes a long time.
+
+If you'd like to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+2024-12-03 03:45:49.645098: E external/xla/xla/service/slow_operation_alarm.cc:133] The operation took 1.004036921s
+Constant folding an instruction is taking > 1s:
+
+  %pad.1 = bf16[40962,1,474]{2,1,0} pad(bf16[40962,1,3]{2,1,0} %constant.348, bf16[] %constant.349), padding=0_0x0_0x471_0, metadata={op_name="jit(<unnamed wrapped function>)/jit(main)/while/body/concatenate[dimension=2]" source_file="/home/hiskim1/his_graphcast/graphcast/graphcast.py" source_line=645}
+
+This isn't necessarily a bug; constant-folding is inherently a trade-off between compilation time and speed at runtime. XLA has some guards that attempt to keep constant folding from taking too long, but fundamentally you'll always be able to come up with an input program that takes a long time.
+
+If you'd like to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+2024-12-03 12:27:14.196736: E external/xla/xla/service/slow_operation_alarm.cc:65] Constant folding an instruction is taking > 1s:
+
+  %pad.1 = bf16[40962,1,474]{2,1,0} pad(bf16[40962,1,3]{2,1,0} %constant.348, bf16[] %constant.349), padding=0_0x0_0x471_0, metadata={op_name="jit(<unnamed wrapped function>)/jit(main)/while/body/concatenate[dimension=2]" source_file="/home/hiskim1/his_graphcast/graphcast/graphcast.py" source_line=645}
+
+This isn't necessarily a bug; constant-folding is inherently a trade-off between compilation time and speed at runtime. XLA has some guards that attempt to keep constant folding from taking too long, but fundamentally you'll always be able to come up with an input program that takes a long time.
+
+If you'd like to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+2024-12-03 12:27:14.685954: E external/xla/xla/service/slow_operation_alarm.cc:133] The operation took 1.489579822s
+Constant folding an instruction is taking > 1s:
+
+  %pad.1 = bf16[40962,1,474]{2,1,0} pad(bf16[40962,1,3]{2,1,0} %constant.348, bf16[] %constant.349), padding=0_0x0_0x471_0, metadata={op_name="jit(<unnamed wrapped function>)/jit(main)/while/body/concatenate[dimension=2]" source_file="/home/hiskim1/his_graphcast/graphcast/graphcast.py" source_line=645}
+
+This isn't necessarily a bug; constant-folding is inherently a trade-off between compilation time and speed at runtime. XLA has some guards that attempt to keep constant folding from taking too long, but fundamentally you'll always be able to come up with an input program that takes a long time.
+
+If you'd like to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1
+/home/hiskim1/.conda/envs/hiskim1_graphcast/lib/python3.11/site-packages/xarray/backends/plugins.py:80: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+WARNING:absl:Skipping gradient checkpointing for sequence length of 1

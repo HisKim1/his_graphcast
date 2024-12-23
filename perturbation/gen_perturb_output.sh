@@ -2,9 +2,9 @@
 
 model="original"
 eval_steps=28
-input_files=$(ls /data/GC_input/percent/ERA5_* | tee filelist.txt)
-input_dir="/data/GC_input/percent/"
-output_dir="/data/GC_output/percent"
+input_files=$(ls /geodata2/S2S/DL/GC_input/percent/ERA5_* | tee filelist.txt)
+input_dir="/geodata2/S2S/DL/GC_input/percent/"
+output_dir="/geodata2/S2S/DL/GC_output/percent/"
 
 echo ========================================================
 cat filelist.txt | while read input_file
@@ -21,7 +21,7 @@ do
         continue
     fi
     
-    python ~/graphcast/GC_run.py --input "$input_dir$input_file" --output "$output_file" --model "$model" --eval_steps "$eval_steps"
+    python ~/his_graphcast/GC_run.py --input "$input_file" --output "$output_file" --model "$model" --eval_steps "$eval_steps"
     chmod 777 "$output_file"
     echo "========================================================"
 done 
