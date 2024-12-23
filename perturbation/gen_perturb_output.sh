@@ -21,7 +21,7 @@ do
         continue
     fi
     
-    python ~/graphcast/GC_run.py --input "$input_file" --output "$output_file" --model "$model" --eval_steps "$eval_steps"
+    python ~/his_graphcast/GC_run.py --input "$input_file" --output "$output_file" --model "$model" --eval_steps "$eval_steps"
     chmod 777 "$output_file"
     echo "========================================================"
 done 
