@@ -6,7 +6,8 @@ import his_utils
 import os
 import itertools
 
-scales = [0.01, 0.05, 0.1, 0.5]
+# 0.01 0.05 0.1 0.5
+scales = [0.03, 0.07, 0.085, 0.3]
 
 ten_persent = 103680
 

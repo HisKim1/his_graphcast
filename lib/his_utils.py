@@ -194,8 +194,9 @@ def add_region_perturbation(original: xr.Dataset,
     lat_values = device_put(jnp.array(original.lat.values))
     lon_values = device_put(jnp.array(original.lon.values))
 
-    with xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/stats_stddev_by_level.nc") as std:
+    with xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/stats_stddev_by_level.nc") as std, xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/stats_mean_by_level.nc") as mean:  
         std_data = {var: device_put(jnp.array(std[var].values)) for var in variables}
+        mean_data = {var: device_put(jnp.array(mean[var].values)) for var in variables}
         perturbed = original.copy()
         
         # Generate random lat/lon pairs to perturb from the entire grid using JAX
@@ -217,10 +218,10 @@ def add_region_perturbation(original: xr.Dataset,
             if 'level' in original[var].dims:
                 for level_idx in range(original.level.size):
                     if wipe_out:
-                        # Overwrite with std value
+                        # Overwrite with mean value
                         original_data[var] = original_data[var].at[
                             perturb_timesteps[:, None], level_idx, selected_lat_indices[None, :], selected_lon_indices[None, :]
-                        ].set(std_data[var][level_idx])
+                        ].set(mean_data[var][level_idx])
                     else:
                         # Broadcast perturbation over all specified timesteps and selected lat/lon points
                         original_data[var] = original_data[var].at[
@@ -228,10 +229,10 @@ def add_region_perturbation(original: xr.Dataset,
                         ].add(scale * normal_dist[None, :] * std_data[var][level_idx])
             else:
                 if wipe_out:
-                    # Overwrite with std value
+                    # Overwrite with mean value
                     original_data[var] = original_data[var].at[
                         perturb_timesteps[:, None], selected_lat_indices[None, :], selected_lon_indices[None, :]
-                    ].set(std_data[var])
+                    ].set(mean_data[var])
                 else:
                     # Apply perturbation without level dimension
                     original_data[var] = original_data[var].at[
