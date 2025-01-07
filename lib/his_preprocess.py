@@ -65,13 +65,14 @@ def jax_weighted_mean(ds: xr.Dataset, var_name="2m_temperature"):
 
     return weighted_mean_np
 
-def weighted_mean(dataset: xr.Dataset):
-    weights = np.cos(np.deg2rad(dataset.lat))
-    weights.name = "weights"
-    weighted = dataset.weighted(weights)
-    
-    return weighted.mean(('lat', 'lon'))
-
+def weighted_mean(data):
+    if isinstance(data, xr.Dataset) or isinstance(data, xr.DataArray):
+        weights = np.cos(np.deg2rad(data.lat))
+        weights.name = "weights"
+        weighted = data.weighted(weights)
+        return weighted.mean(('lat', 'lon'))
+    else:
+        raise TypeError("Input must be an xarray.Dataset or xarray.DataArray")
 
 def preprocess_GC(dataset:xr.Dataset, target_var="2m_temperature", region=None):
     if target_var == "2m_temperature":

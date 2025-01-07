@@ -6,8 +6,8 @@ import his_utils
 import os
 import itertools
 
-# alr done: 0.01 0.03 0.05 0.07 0.085 0.1 || 0.3 0.5 ||
-scales = [0.35, 0.375, 0.4, 0.425, 0.45, 0.475]
+# alr done: 0.01 0.03 0.05 0.07 0.085 0.1 || 0.3 0.35, 0.375, 0.4, 0.425, 0.45, 0.475 0.5 0.525 0.55 0.6 ||
+scales = range(100,130,1)
 
 ten_persent = 103680
 
@@ -39,28 +39,28 @@ all_but_one_variable_combinations = list(itertools.combinations(variables, len(v
 all_variable_combination = [tuple(variables)]  # All variables selected
 
 # Combine all cases
-selected_combinations = [('2m_temperature',)] #+ all_but_one_variable_combinations + all_variable_combination
+selected_combinations = all_variable_combination #+ all_but_one_variable_combinations + all_variable_combination
 
 # Loop through selected combinations
-for combo in  [('2m_temperature',)]:
+for combo in  selected_combinations:
     combo_string = binary_string(combo)
     for scale in scales:
-        for n in range(1, 11, 2):
-            # Generate a descriptive filename
-            wipeout_str = "scale"
-            filename = f"ERA5_{combo_string}_{scale}_{n}0.nc"
-            if os.path.exists(os.path.join('/geodata2/S2S/DL/GC_input/percent2', filename)):
-                print(f"Skipping: {filename}")
-                continue
-            # Apply the perturbation to the dataset
-            dataset = xr.open_dataset('/geodata2/S2S/DL/GC_input/2021-06-21/ERA5_input.nc')
-            perturbed_dataset = his_utils.add_region_perturbation(
-                dataset, list(combo), scale, perturb_timestep=[0, 1], num_points=ten_persent*n, wipe_out=False
-            )
-            # Save to a new compressed file
-            output_path = os.path.join('/geodata2/S2S/DL/GC_input/percent2', filename)
-            encoding = {var: {'zlib': True, 'complevel': 5} for var in perturbed_dataset.variables}
-            perturbed_dataset.to_netcdf(output_path, encoding=encoding)
-            print(f"Created: {filename}")
-            dataset.close()
-            perturbed_dataset.close()
+        # for n in range(1, 11, 2):
+        # Generate a descriptive filename
+        wipeout_str = "scale"
+        filename = f"ERA5_{combo_string}_{scale}_30.nc"
+        if os.path.exists(os.path.join('/geodata2/S2S/DL/GC_input/percent2', filename)):
+            print(f"Skipping: {filename}")
+            continue
+        # Apply the perturbation to the dataset
+        dataset = xr.open_dataset('/geodata2/S2S/DL/GC_input/2021-06-21/ERA5_input.nc')
+        perturbed_dataset = his_utils.add_region_perturbation(
+            dataset, list(combo), scale, perturb_timestep=[0, 1], num_points=ten_persent*3, wipe_out=True
+        )
+        # Save to a new compressed file
+        output_path = os.path.join('/geodata2/S2S/DL/GC_input/percent2', filename)
+        encoding = {var: {'zlib': True, 'complevel': 5} for var in perturbed_dataset.variables}
+        perturbed_dataset.to_netcdf(output_path, encoding=encoding)
+        print(f"Created: {filename}")
+        dataset.close()
+        perturbed_dataset.close()
