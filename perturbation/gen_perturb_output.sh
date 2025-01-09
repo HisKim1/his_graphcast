@@ -3,7 +3,7 @@
 model="original"
 eval_steps=40
 
-input_files=$(ls /geodata2/S2S/DL/GC_input/percent2/ERA5_1{0,1}?_0.3* | tee filelist.txt)
+input_files=$(ls /geodata2/S2S/DL/GC_input/percent2/ERA5_11111111111_200_??0.nc | tee filelist.txt)
 input_dir="/geodata2/S2S/DL/GC_input/percent2/"
 output_dir="/data/GC_output/percent2"
 
@@ -26,3 +26,5 @@ do
     chmod 777 "$output_file"
     echo "========================================================"
 done 
+
+rm -f filelist.txt
