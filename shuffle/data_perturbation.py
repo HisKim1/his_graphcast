@@ -47,21 +47,19 @@ all_variable_combination = [tuple(variables)]  # All variables selected
 selected_combinations = all_variable_combination #+ all_but_one_variable_combinations + all_variable_combination
 
 # Loop through selected combinations
-for combo in  selected_combinations:
+for i in range(5):
+    combo = tuple(variables)
     combo_string = binary_string(combo)
     for scale in scales:
         for n in range(1, 11, 2):
             # Generate a descriptive filename
             wipeout_str = "scale"
-            filename = f"ERA5_{combo_string}_{scale}_{n}.nc"
+            filename = f"ERA5_{scale}_{n}_{i}.nc"
             if os.path.exists(os.path.join('/geodata2/S2S/DL/GC_input/shuffle', filename)):
                 print(f"Skipping: {filename}")
                 continue
             # Apply the perturbation to the dataset
             dataset = xr.open_dataset('/geodata2/S2S/DL/GC_input/2021-06-21/ERA5_input.nc')
-            # perturbed_dataset = his_utils.add_region_perturbation(
-            #     dataset, list(combo), scale, perturb_timestep=[0, 1], num_points=ten_persent*n, wipe_out=True
-            # )
             perturbed_dataset = his_utils.add_shuffle_perturbation(
                 dataset,
                 variables = list(combo), 
