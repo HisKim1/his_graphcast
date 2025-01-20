@@ -1,11 +1,26 @@
 #!/bin/bash
 
+# 파일 경로 패턴 저장
+
+while true; do
+    # 현재 파일 개수 확인
+    file_count=$(ls /geodata2/S2S/DL/GC_input/shuffle/ERA5_0.{01,05,1,15,2,25}_*_*.nc 2>/dev/null | wc -l)
+    
+    if [ $file_count -eq 150 ]; then
+        echo "Total 150 files are generated."
+        break
+    else
+        echo "# Current File: $file_count"
+    fi
+done
+
+
 model="original"
 eval_steps=40
 
-input_files=$(ls /geodata2/S2S/DL/GC_input/percent2/ERA5_11111111111_250_?.nc | tee filelist.txt)
-input_dir="/geodata2/S2S/DL/GC_input/percent2/"
-output_dir="/data/GC_output/percent2"
+input_files=$(ls /geodata2/S2S/DL/GC_input/proportional/ERA5_0.5_*_*.nc | tee filelist.txt)
+input_dir="/geodata2/S2S/DL/GC_input/proportional/"
+output_dir="/data/GC_output/proportional"
 
 echo ========================================================
 cat filelist.txt | while read input_file

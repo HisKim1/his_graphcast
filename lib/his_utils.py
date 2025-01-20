@@ -35,14 +35,444 @@ SURFACE_VARIABLE = ['10m_u_component_of_wind',
  '10m_v_component_of_wind',
  '2m_temperature',
  'mean_sea_level_pressure',
- 'total_precipitation_6hr']
+ 'total_precipitation_6hr'] # cannot be negative
 
 PRESSURE_VARIABLE = ['geopotential',
- 'specific_humidity',
+ 'specific_humidity', # cannot be negative
  'temperature',
  'u_component_of_wind',
  'v_component_of_wind',
  'vertical_velocity']
+
+def add_proportional_perturbation(
+    original: xr.Dataset,
+    variables: list[str],
+    scale: float = 1,
+    perturb_timestep: list[int] = [0, 1],
+    num_points: int = 23568048,
+    wipe_out: bool = True,
+    region: dict = None,
+):
+    """
+    original : xr.Dataset
+        - (batch, time, lat, lon, [level]) 구조의 원본 데이터셋
+    variables : list[str]
+        - perturb를 적용할 변수 목록
+        - 예) SURFACE_VARIABLE + PRESSURE_VARIABLE
+    scale : float
+        - (기존) gaussian noise의 scale factor (wipe_out=False 일 때 사용)
+        - (수정) 자기 자신의 값 * scale * Normal(0,1)을 추가
+    perturb_timestep : list[int]
+        - perturb를 적용할 time index 리스트 (기본값: [0,1])
+    num_points : int
+        - 전체 (표면+대기압) 격자의 10%에 해당하는 개수 (기본값: 23568048)
+    wipe_out : bool
+        - True이면 mean 값으로 치환, False이면 자기 자신 * scale * N(0,1)을 더함
+    region : dict
+        - 특정 영역에서만 perturb를 주고 싶을 때 사용.
+        - 예: region = {'lat': (lat_min, lat_max), 'lon': (lon_min, lon_max)}
+        - None이면 전 지구 영역을 대상으로 perturb를 적용.
+    """
+    NONNEGATIVE_VARS = {"total_precipitation_6hr", "specific_humidity"}
+
+    # ---- 사전 세팅
+    perturbed = original.copy()
+
+    # lat/lon 좌표값
+    lat_vals = perturbed["lat"].values
+    lon_vals = perturbed["lon"].values
+
+    batch_size = perturbed.sizes.get('batch', 1)
+    time_size = perturbed.sizes.get('time', 1)
+
+    # region이 주어졌다면, 그 영역 내의 lat/lon 인덱스만 추출
+    if region is not None:
+        # region['lat'] = (lat_min, lat_max), region['lon'] = (lon_min, lon_max)
+        lat_min, lat_max = region['lat']
+        lon_min, lon_max = region['lon']
+
+        # 해당 영역에 속하는 lat/lon 인덱스 마스킹
+        lat_mask = (lat_vals >= lat_min) & (lat_vals <= lat_max)
+        lon_mask = (lon_vals >= lon_min) & (lon_vals <= lon_max)
+
+        # region 내 lat, lon 인덱스
+        lat_idx_region = np.where(lat_mask)[0]  # 예: [10, 11, 12, ...] 형태
+        lon_idx_region = np.where(lon_mask)[0]
+
+        region_lat_size = len(lat_idx_region)
+        region_lon_size = len(lon_idx_region)
+    else:
+        # region이 None이면 전 영역 사용
+        lat_idx_region = np.arange(perturbed.sizes['lat'])
+        lon_idx_region = np.arange(perturbed.sizes['lon'])
+        region_lat_size = perturbed.sizes['lat']
+        region_lon_size = perturbed.sizes['lon']
+
+    # level 크기 (level 없는 경우 1로 처리)
+    level_size = perturbed.sizes['level'] if 'level' in perturbed.sizes else 1
+
+    # surface/pressure 변수 구분
+    surface_vars = []
+    pressure_vars = []
+    for var in variables:
+        if 'level' in perturbed[var].dims:
+            pressure_vars.append(var)
+        else:
+            surface_vars.append(var)
+
+    # (1) region 내부에서 변수별 격자 개수 계산
+    #     surface: region_lat_size * region_lon_size
+    #     pressure: level_size * region_lat_size * region_lon_size
+    surf_grid = region_lat_size * region_lon_size
+    press_grid = level_size * region_lat_size * region_lon_size
+
+    var_sizes = []
+    for var in surface_vars:
+        var_sizes.append(surf_grid)
+    for var in pressure_vars:
+        var_sizes.append(press_grid)
+
+    # jnp.array로 변환
+    var_sizes_j = jnp.array(var_sizes)  # shape=(len(variables),)
+
+    # var_offsets: 누적합 (0, var_sizes[0], var_sizes[0]+var_sizes[1], ...)
+    var_offsets_j = jnp.cumsum(var_sizes_j)  # shape=(len(variables),)
+    var_offsets_j = jnp.concatenate([jnp.array([0]), var_offsets_j])  # shape=(len(variables)+1,)
+
+    # (2) JAX로 데이터를 옮겨놓기
+    original_data = {}
+    for var in variables:
+        original_data[var] = device_put(jnp.array(perturbed[var].values))
+
+    # 표준편차/평균 데이터셋 (wipe_out을 위해 평균은 계속 사용)
+    # std는 더 이상 사용하지 않으므로 불러오지 않아도 되지만, 혹시 필요하면 주석만 처리
+    with xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/stats_mean_by_level.nc") as mean_ds:
+        mean_data = {}
+        for var in variables:
+            mean_data[var] = device_put(jnp.array(mean_ds[var].values))
+
+        # 랜덤 시드
+        key = random.PRNGKey(42)
+
+        # (3) time loop
+        for t_idx in perturb_timestep:
+            if t_idx >= time_size:
+                continue  # time 범위 넘어가면 skip
+
+            # batch loop
+            for b_idx in range(batch_size):
+                # 3-1) num_points개를 region 내 ( var_sizes 합 )에서 무작위로 뽑기
+                total_points_region = var_offsets_j[-1]  # region 내 모든 변수의 격자 합
+                key, subkey = random.split(key)
+                rand_indices = random.choice(
+                    subkey,
+                    total_points_region,
+                    shape=(num_points,),
+                    replace=True  # region 범위 내에서 중복 허용
+                )
+
+                # 3-2) 각 랜덤 인덱스가 어떤 변수인지 searchsorted로 판별
+                var_id = jnp.searchsorted(var_offsets_j, rand_indices, side='right') - 1
+                local_index = rand_indices - var_offsets_j[var_id]
+
+                # 3-3) 변수별로 모아서 perturb
+                for i, var in enumerate(surface_vars + pressure_vars):
+                    mask = (var_id == i)
+                    count_i = jnp.sum(mask)
+                    if count_i == 0:
+                        continue
+
+                    key, subkey = random.split(key)
+                    normal_dist = random.normal(subkey, shape=(count_i,))
+
+                    if var in surface_vars:
+                        # unravel
+                        local_index_surf = local_index[mask]
+                        lat_idx_local, lon_idx_local = jnp.divmod(local_index_surf, region_lon_size)
+
+                        # 실제 global lat/lon 인덱스로 변환
+                        lat_idx_global = jnp.array(lat_idx_region)[lat_idx_local]
+                        lon_idx_global = jnp.array(lon_idx_region)[lon_idx_local]
+
+                        if wipe_out:
+                            # (이전 로직과 동일) 평균값으로 치환
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lat_idx_global, lon_idx_global
+                            ].set(mean_data[var])
+                        else:
+                            # **자기 자신의 값 * scale * normal_dist**를 더함
+                            old_vals = original_data[var][b_idx, t_idx, lat_idx_global, lon_idx_global]
+                            noise = old_vals * scale * normal_dist
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lat_idx_global, lon_idx_global
+                            ].add(noise)
+
+                        # 음수 불가 변수는 clip 처리
+                        if var in NONNEGATIVE_VARS:
+                            updated_vals = original_data[var][b_idx, t_idx, lat_idx_global, lon_idx_global]
+                            clipped_vals = jnp.clip(updated_vals, 0.0, None)  # 최소 0
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lat_idx_global, lon_idx_global
+                            ].set(clipped_vals)
+
+                    else:
+                        # pressure var
+                        local_index_press = local_index[mask]
+                        lvl_idx_local = local_index_press // (region_lat_size * region_lon_size)
+                        latlon_local = local_index_press % (region_lat_size * region_lon_size)
+                        lat_idx_local, lon_idx_local = jnp.divmod(latlon_local, region_lon_size)
+
+                        # 실제 global lat/lon 인덱스로 변환
+                        lat_idx_global = jnp.array(lat_idx_region)[lat_idx_local]
+                        lon_idx_global = jnp.array(lon_idx_region)[lon_idx_local]
+
+                        if wipe_out:
+                            # (이전 로직과 동일) 평균값으로 치환
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global
+                            ].set(mean_data[var][lvl_idx_local])
+                        else:
+                            # **자기 자신의 값 * scale * normal_dist**를 더함
+                            old_vals = original_data[var][b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global]
+                            noise = old_vals * scale * normal_dist
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global
+                            ].add(noise)
+
+                        # 음수 불가 변수는 clip 처리
+                        if var in NONNEGATIVE_VARS:
+                            updated_vals = original_data[var][b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global]
+                            clipped_vals = jnp.clip(updated_vals, 0.0, None)
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global
+                            ].set(clipped_vals)
+
+        # (4) perturb된 결과를 numpy array로 되돌려서 xarray에 붙여넣기
+        for var in variables:
+            perturbed[var].values = np.array(original_data[var])
+
+        # 혹시 'perturbation' 변수가 있었다면 제거
+        if 'perturbation' in perturbed.data_vars:
+            perturbed = perturbed.drop_vars('perturbation')
+
+    return perturbed
+
+
+def add_regional_shuffle_perturbation(
+    original: xr.Dataset,
+    variables: list[str],
+    scale: float = 1,
+    perturb_timestep: list[int] = [0, 1],
+    num_points: int = 23568048,
+    wipe_out: bool = True,
+    region: dict = None,
+):
+    """
+    original : xr.Dataset
+        - (batch, time, lat, lon, [level]) 구조의 원본 데이터셋
+    variables : list[str]
+        - perturb를 적용할 변수 목록
+        - 예) SURFACE_VARIABLE + PRESSURE_VARIABLE
+    scale : float
+        - gaussian noise의 scale factor (wipe_out=False 일 때 사용)
+    perturb_timestep : list[int]
+        - perturb를 적용할 time index 리스트 (기본값: [0,1])
+    num_points : int
+        - 전체 (표면+대기압) 격자의 10%에 해당하는 개수 (기본값: 23568048)
+    wipe_out : bool
+        - True이면 mean 값으로 치환, False이면 (scale * std * Normal(0,1))을 더함
+    region : dict
+        - 특정 영역에서만 perturb를 주고 싶을 때 사용.
+        - 예: region = {'lat': (lat_min, lat_max), 'lon': (lon_min, lon_max)}
+        - None이면 전 지구 영역을 대상으로 perturb를 적용.
+    """
+    NONNEGATIVE_VARS = {"total_precipitation_6hr", "specific_humidity"}
+
+    # ---- 사전 세팅
+    perturbed = original.copy()
+
+    # lat/lon 좌표값
+    lat_vals = perturbed["lat"].values
+    lon_vals = perturbed["lon"].values
+
+    batch_size = perturbed.sizes.get('batch', 1)
+    time_size = perturbed.sizes.get('time', 1)
+
+    # region이 주어졌다면, 그 영역 내의 lat/lon 인덱스만 추출
+    if region is not None:
+        # region['lat'] = (lat_min, lat_max), region['lon'] = (lon_min, lon_max)
+        lat_min, lat_max = region['lat']
+        lon_min, lon_max = region['lon']
+
+        # 해당 영역에 속하는 lat/lon 인덱스 마스킹
+        lat_mask = (lat_vals >= lat_min) & (lat_vals <= lat_max)
+        lon_mask = (lon_vals >= lon_min) & (lon_vals <= lon_max)
+
+        # region 내 lat, lon 인덱스
+        lat_idx_region = np.where(lat_mask)[0]  # 예: [10, 11, 12, ...] 형태
+        lon_idx_region = np.where(lon_mask)[0]
+
+        region_lat_size = len(lat_idx_region)
+        region_lon_size = len(lon_idx_region)
+    else:
+        # region이 None이면 전 영역 사용
+        lat_idx_region = np.arange(perturbed.sizes['lat'])
+        lon_idx_region = np.arange(perturbed.sizes['lon'])
+        region_lat_size = perturbed.sizes['lat']
+        region_lon_size = perturbed.sizes['lon']
+
+    # level 크기 (level 없는 경우 1로 처리)
+    level_size = perturbed.sizes['level'] if 'level' in perturbed.sizes else 1
+
+    # surface/pressure 변수 구분
+    surface_vars = []
+    pressure_vars = []
+    for var in variables:
+        if 'level' in perturbed[var].dims:
+            pressure_vars.append(var)
+        else:
+            surface_vars.append(var)
+
+    # (1) region 내부에서 변수별 격자 개수 계산
+    #     surface: region_lat_size * region_lon_size
+    #     pressure: level_size * region_lat_size * region_lon_size
+    surf_grid = region_lat_size * region_lon_size
+    press_grid = level_size * region_lat_size * region_lon_size
+
+    var_sizes = []
+    for var in surface_vars:
+        var_sizes.append(surf_grid)
+    for var in pressure_vars:
+        var_sizes.append(press_grid)
+
+    # jnp.array로 변환
+    var_sizes_j = jnp.array(var_sizes)  # shape=(len(variables),)
+
+    # var_offsets: 누적합 (0, var_sizes[0], var_sizes[0]+var_sizes[1], ...)
+    var_offsets_j = jnp.cumsum(var_sizes_j)  # shape=(len(variables),)
+    var_offsets_j = jnp.concatenate([jnp.array([0]), var_offsets_j])  # shape=(len(variables)+1,)
+
+    # (2) JAX로 데이터를 옮겨놓기
+    original_data = {}
+    for var in variables:
+        original_data[var] = device_put(jnp.array(perturbed[var].values))
+
+    # 표준편차/평균 데이터셋 로드 (사용자 환경에 맞게 경로 수정)
+    with xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/stats_stddev_by_level.nc") as std_ds, \
+         xr.open_dataset("/geodata2/S2S/DL/GC_input/stat/stats_mean_by_level.nc") as mean_ds:
+
+        std_data = {}
+        mean_data = {}
+        for var in variables:
+            std_data[var] = device_put(jnp.array(std_ds[var].values))
+            mean_data[var] = device_put(jnp.array(mean_ds[var].values))
+
+        # 랜덤 시드
+        key = random.PRNGKey(42)
+
+        # (3) time loop
+        for t_idx in perturb_timestep:
+            if t_idx >= time_size:
+                continue  # time 범위 넘어가면 skip
+
+            # batch loop
+            for b_idx in range(batch_size):
+                # 3-1) num_points개를 region 내 ( var_sizes 합 )에서 무작위로 뽑기
+                total_points_region = var_offsets_j[-1]  # region 내 모든 변수의 격자 합
+                key, subkey = random.split(key)
+                rand_indices = random.choice(
+                    subkey,
+                    total_points_region,
+                    shape=(num_points,),
+                    replace=True  # region 범위 내에서 중복 허용
+                )
+
+                # 3-2) 각 랜덤 인덱스가 어떤 변수인지 searchsorted로 판별
+                var_id = jnp.searchsorted(var_offsets_j, rand_indices, side='right') - 1
+                local_index = rand_indices - var_offsets_j[var_id]
+
+                # 3-3) 변수별로 모아서 perturb
+                for i, var in enumerate(surface_vars + pressure_vars):
+                    mask = (var_id == i)
+                    count_i = jnp.sum(mask)
+                    if count_i == 0:
+                        continue
+
+                    key, subkey = random.split(key)
+                    normal_dist = random.normal(subkey, shape=(count_i,))
+
+                    if var in surface_vars:
+                        # unravel
+                        local_index_surf = local_index[mask]
+                        lat_idx_local, lon_idx_local = jnp.divmod(local_index_surf, region_lon_size)
+
+                        # 실제 global lat/lon 인덱스로 변환
+                        lat_idx_global = jnp.array(lat_idx_region)[lat_idx_local]
+                        lon_idx_global = jnp.array(lon_idx_region)[lon_idx_local]
+
+                        if wipe_out:
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lat_idx_global, lon_idx_global
+                            ].set(mean_data[var])
+                        else:
+                            # lat_rad = jnp.deg2rad(jnp.array(lat_vals)[lat_idx_global])  # degree -> rad
+                            # cos_lat = jnp.cos(lat_rad)
+
+                            noise = scale * std_data[var] * normal_dist # * cos_lat
+
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lat_idx_global, lon_idx_global
+                            ].add(noise)
+
+                        if var in NONNEGATIVE_VARS:
+                            old_vals = original_data[var][b_idx, t_idx, lat_idx_global, lon_idx_global]
+                            clipped_vals = jnp.clip(old_vals, 0.0, None)  # 최소 0
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lat_idx_global, lon_idx_global
+                            ].set(clipped_vals)
+                            
+                    else:
+                        # pressure var
+                        local_index_press = local_index[mask]
+                        lvl_idx_local = local_index_press // (region_lat_size * region_lon_size)
+                        latlon_local = local_index_press % (region_lat_size * region_lon_size)
+                        lat_idx_local, lon_idx_local = jnp.divmod(latlon_local, region_lon_size)
+
+                        # 실제 global lat/lon 인덱스로 변환
+                        lat_idx_global = jnp.array(lat_idx_region)[lat_idx_local]
+                        lon_idx_global = jnp.array(lon_idx_region)[lon_idx_local]
+
+                        if wipe_out:
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global
+                            ].set(mean_data[var][lvl_idx_local])
+                        else:
+                            # lat_rad = jnp.deg2rad(jnp.array(lat_vals)[lat_idx_global])
+                            # cos_lat = jnp.cos(lat_rad)
+
+                            noise = scale * std_data[var][lvl_idx_local] * normal_dist # * cos_lat
+
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global
+                            ].add(noise)
+
+                        if var in NONNEGATIVE_VARS:
+                            old_vals = original_data[var][b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global]
+                            clipped_vals = jnp.clip(old_vals, 0.0, None)
+                            original_data[var] = original_data[var].at[
+                                b_idx, t_idx, lvl_idx_local, lat_idx_global, lon_idx_global
+                            ].set(clipped_vals)
+
+        # (4) perturb된 결과를 numpy array로 되돌려서 xarray에 붙여넣기
+        for var in variables:
+            perturbed[var].values = np.array(original_data[var])
+
+        # 혹시 'perturbation' 변수가 있었다면 제거
+        if 'perturbation' in perturbed.data_vars:
+            perturbed = perturbed.drop_vars('perturbation')
+
+    return perturbed
+
 
 def add_shuffle_perturbation(original: xr.Dataset, 
                                 variables: list[str] = SURFACE_VARIABLE + PRESSURE_VARIABLE, 
