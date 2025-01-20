@@ -6,12 +6,11 @@ import his_utils
 import os
 import itertools
 
-# alr done: 0.01 0.03 0.05 0.07 0.085 0.1 || 0.3 0.35, 0.375, 0.4, 0.425, 0.45, 0.475 0.5 0.525 0.55 0.6 ||
-# 100s: column-wise wiped.
-# 200s: shuffle, 10%. I miss-named them......
-# 250s: shuffle, following convention.
+# New Convention
+# {gaussian scale}_{# values}_{ens i}.nc
 
-scales = [0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
+
+scales = [0.0001, 0.005, 0.01, 0.03, 0.05]
 
 ten_persent = 103680
 ten_percent = 23568048
@@ -47,20 +46,20 @@ all_variable_combination = [tuple(variables)]  # All variables selected
 selected_combinations = all_variable_combination #+ all_but_one_variable_combinations + all_variable_combination
 
 # Loop through selected combinations
-for i in range(5):
+for i in range(1):
     combo = tuple(variables)
     combo_string = binary_string(combo)
     for scale in scales:
-        for n in range(1, 11, 2):
+        for n in range(6, 31, 5):
             # Generate a descriptive filename
             wipeout_str = "scale"
             filename = f"ERA5_{scale}_{n}_{i}.nc"
-            if os.path.exists(os.path.join('/geodata2/S2S/DL/GC_input/shuffle', filename)):
+            if os.path.exists(os.path.join('/geodata2/S2S/DL/GC_input/proportional', filename)):
                 print(f"Skipping: {filename}")
                 continue
             # Apply the perturbation to the dataset
             dataset = xr.open_dataset('/geodata2/S2S/DL/GC_input/2021-06-21/ERA5_input.nc')
-            perturbed_dataset = his_utils.add_shuffle_perturbation(
+            perturbed_dataset = his_utils.add_proportional_perturbation(
                 dataset,
                 variables = list(combo), 
                 scale = scale,
@@ -69,7 +68,7 @@ for i in range(5):
                 wipe_out = False
             )
             # Save to a new compressed file
-            output_path = os.path.join('/geodata2/S2S/DL/GC_input/shuffle', filename)
+            output_path = os.path.join('/geodata2/S2S/DL/GC_input/proportional', filename)
             encoding = {var: {'zlib': True, 'complevel': 5} for var in perturbed_dataset.variables}
             perturbed_dataset.to_netcdf(output_path, encoding=encoding)
             print(f"Created: {filename}")
