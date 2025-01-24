@@ -27,10 +27,7 @@ REGION_BOUNDARIES = {
     "East Asia": {"lat": (25, 60), "lon": (102.5, 150)},
     "AusNZ": {"lat": (-45, -12.5), "lon": (120, 175)}
 }
-import xarray as xr
-import numpy as np
-from jax import random, device_put
-import jax.numpy as jnp
+
 SURFACE_VARIABLE = ['10m_u_component_of_wind',
  '10m_v_component_of_wind',
  '2m_temperature',
@@ -934,6 +931,7 @@ def add_Gaussian_perturbation(original: xr.Dataset,
     return perturbed
 
 
+
 def convert_scale(dataset):
     """
         convert scale of tp_6hr and slp to mm and hPa
@@ -949,7 +947,8 @@ def convert_scale(dataset):
     return dataset
 
 
-def transform_dataset(dataset):
+
+def transform_dataset(dataset, d_t = "6hr"):
     """
         Transform the dataset to the format such as variable names and coordinates required by the model.
         Referenced at data_concat.ipynb
@@ -958,13 +957,16 @@ def transform_dataset(dataset):
     if 'batch' not in dataset.dims:
         dataset = dataset.expand_dims(dim={'batch': [0]})
     
+    tp = f"total_precipitation_{d_t}"
+
     # 2. 변수 이름 매핑
     name_mapping = {
         'u10': '10m_u_component_of_wind',
         'v10': '10m_v_component_of_wind',
         't2m': '2m_temperature',
         'msl': 'mean_sea_level_pressure',
-        'tp': 'total_precipitation_6hr',
+        'tp': tp,
+        'sst': 'sea_surface_temperature',
         'z': 'geopotential',
         'q': 'specific_humidity',
         't': 'temperature',
@@ -996,39 +998,59 @@ def transform_dataset(dataset):
     
     return dataset.reindex(lat=dataset.lat[::-1])
 
-def create_forcing_dataset(time_steps, resolution, start_time):
+
+
+def create_forcing_dataset(time_steps, 
+                           resolution, 
+                           start_time,
+                           d_t = 6):
     lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
-    lat = np.arange(-90.0, 90.0 + resolution/2, resolution, dtype=np.float32)
     
     start_datetime = pd.to_datetime(start_time) + pd.Timedelta(hours=12)
-    datetime = pd.date_range(start=start_datetime, periods=time_steps, freq='6h')
+    datetime = pd.date_range(start=start_datetime, 
+                             periods=time_steps, 
+                             freq=f"{d_t}h")
     
-    time = pd.timedelta_range(start='6h', periods=time_steps, freq='6h')
     
-    # Create the dataset
-    ds = xr.Dataset(
+    time = pd.timedelta_range(start=pd.Timedelta(hours=d_t), 
+                              periods=time_steps, 
+                              freq=f"{d_t}h")
+        
+    variables = ['year_progress_sin',
+                 'year_progress_cos',
+                 'day_progress_sin',
+                 'day_progress_cos']
+    
+    if d_t == 6:
+        lat = np.arange(-90.0, 90.0 + resolution/2, resolution, dtype=np.float32)
+        ds = xr.Dataset(
         coords={
             'lon': ('lon', lon),
             'lat': ('lat', lat),
             'datetime': ('datetime', datetime),
             'time': ('time', time)
-        }
-    )
-    
-    ds.lat.attrs['long_name'] = 'latitude'
-    ds.lat.attrs['units'] = 'degrees_north'
+            }
+        )
+        
+        ds.lat.attrs['long_name'] = 'latitude'
+        ds.lat.attrs['units'] = 'degrees_north'
+
+        variables.append('toa_incident_solar_radiation')
+        
+        data_utils.add_tisr_var(ds)
+    else:
+        ds = xr.Dataset(
+                coords={
+                    'lon': ('lon', lon),
+                    'datetime': ('datetime', datetime),
+                    'time': ('time', time)
+                    }
+                )
     
     ds.lon.attrs['long_name'] = 'longitude'
     ds.lon.attrs['units'] = 'degrees_east'
-    
-    variables = ['toa_incident_solar_radiation',
-                 'year_progress_sin',
-                 'year_progress_cos',
-                 'day_progress_sin',
-                 'day_progress_cos']
-    
+
     data_utils.add_derived_vars(ds)
-    data_utils.add_tisr_var(ds)
     
      # `datetime` is needed by add_derived_vars but breaks autoregressive rollouts.
     ds = ds.drop_vars("datetime")
@@ -1058,7 +1080,14 @@ def create_forcing_dataset(time_steps, resolution, start_time):
 
     return ds
 
-def create_target_dataset(time_steps, resolution, pressure_levels):
+
+
+def create_target_dataset(
+        time_steps, 
+        resolution, 
+        pressure_levels, 
+        d_t = 6):
+    
     # Define coordinates
     lon = np.arange(0.0, 360.0, resolution, dtype=np.float32)
     lat = np.arange(-90.0, 90.0 + resolution/2, resolution, dtype=np.float32)
@@ -1073,7 +1102,9 @@ def create_target_dataset(time_steps, resolution, pressure_levels):
     level = np.array(level, dtype=np.int64)
 
     # 시작 시간부터 time_steps 개의 6시간 간격 타임델타 생성
-    time = pd.timedelta_range(start='6h', periods=time_steps, freq='6h')
+    time = pd.timedelta_range(start=pd.Timedelta(hours=d_t), 
+                              periods=time_steps, 
+                              freq=f"{d_t}h")
     # timedelta64[ns]로 명시적 변환
     # time = time.astype('timedelta64[ns]')/
 
@@ -1093,9 +1124,17 @@ def create_target_dataset(time_steps, resolution, pressure_levels):
     ds.lon.attrs['long_name'] = 'longitude'
     ds.lon.attrs['units'] = 'degrees_east'
 
+    surface_vars = ['2m_temperature', 
+                        'mean_sea_level_pressure', 
+                        '10m_v_component_of_wind', 
+                        '10m_u_component_of_wind']
     # Add data variables filled with NaN
-    surface_vars = ['2m_temperature', 'mean_sea_level_pressure', '10m_v_component_of_wind', 
-                    '10m_u_component_of_wind', 'total_precipitation_6hr']
+    if d_t == 6:
+        surface_vars.append('total_precipitation_6hr')
+    else:
+        surface_vars.append('total_precipitation_12hr')
+        surface_vars.append('sea_surface_temperature')
+    
     level_vars = ['temperature', 'geopotential', 'u_component_of_wind', 
                   'v_component_of_wind', 'vertical_velocity', 'specific_humidity']
 
@@ -1114,6 +1153,8 @@ def create_target_dataset(time_steps, resolution, pressure_levels):
     ds = ds.transpose("batch", "time", "lat", "lon", ...)
 
     return ds
+
+
 
 def compare_dataarrays(da1: xr.DataArray, da2: xr.DataArray):
     differences = []
@@ -1188,6 +1229,8 @@ def compare_dataarrays(da1: xr.DataArray, da2: xr.DataArray):
     else:
         for difference in differences:
             print(difference)
+
+
 
 # input & forcing에서 잘 먹히는지는 확인 안 됨
 def compare_datasets4target(ds1: xr.Dataset, ds2: xr.Dataset):
