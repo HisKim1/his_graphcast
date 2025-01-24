@@ -68,7 +68,7 @@ for i in range(1):
                 wipe_out = False
             )
             # Save to a new compressed file
-            output_path = os.path.join('/geodata2/S2S/DL/GC_input/shuffle', filename)
+            output_path = os.path.join('/geodata2/S2S/DL/GC_input/proportional', filename)
             encoding = {var: {'zlib': True, 'complevel': 5} for var in perturbed_dataset.variables}
             perturbed_dataset.to_netcdf(output_path, encoding=encoding)
             print(f"Created: {filename}")
