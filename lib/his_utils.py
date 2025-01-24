@@ -9,9 +9,9 @@ import xarray as xr
 
 import jax.numpy as jnp
 from jax import random, device_put
-from jax.config import config
+import jax
 
-config.update("jax_platform_name", "gpu")
+jax.config.update("jax_platform_name", "gpu")
 
 REGION_BOUNDARIES = {
     "global": {"lat": (-90, 90), "lon": (0, 360)},
