@@ -16,6 +16,7 @@ VARIABLE_UNIT = {
     "2m_temperature": "K",
     "mean_sea_level_pressure": "hPa",
     "total_precipitation_6hr": "mm",
+    "total_precipitation_12hr": "mm",
     "geopotential": "m**2 s**-2",
     "specific_humidity": "kg kg**-1",
     "temperature": "K",
