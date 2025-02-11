@@ -10,7 +10,7 @@ import itertools
 # {gaussian scale}_{# values}_{ens i}.nc
 
 
-scales = [0.0001, 0.005, 0.01, 0.03, 0.05]
+scales = [0.005, 0.006, 0.007, 0.008, 0.009]
 
 ten_persent = 103680
 ten_percent = 23568048
@@ -50,7 +50,7 @@ for i in range(1):
     combo = tuple(variables)
     combo_string = binary_string(combo)
     for scale in scales:
-        for n in range(6, 31, 5):
+        for n in range(30, 101, 20):
             # Generate a descriptive filename
             wipeout_str = "scale"
             filename = f"ERA5_{scale}_{n}_{i}.nc"
