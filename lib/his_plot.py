@@ -24,6 +24,7 @@ VARIABLE_UNIT = {
     "v_component_of_wind": "m s**-1",
     "vertical_velocity": "Pa s**-1",
     'toa_incident_solar_radiation': 'J m**-2',
+    'sea_surface_temperature': 'K',
 }
 
 PLOT_TYPE = {
