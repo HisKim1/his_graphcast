@@ -43,7 +43,11 @@ else
   ntime = 1
 end if
 
-nlevel = dimsizes(f->level)
+if (isvar("lev")) then
+  nlevel = dimsizes(f->level)
+else
+  nlevel = 1
+end if
 
 print ("nlat x nlon "+nlat+"x"+nlon)
 
@@ -55,11 +59,17 @@ if (.not. isvar("t")) then
   spectrum!0 = "level"
   spectrum!1 = "N"
 
+else if (.not. isvar("lev")) then
+  spectrum = new((/ntime,N/), "double", 1d-99)
+  spectrum!0 = "time"
+  spectrum!1 = "N"
+
 else
   spectrum = new((/ntime,nlevel,N/), "double", 1d-99)
   spectrum!0 = "time"
   spectrum!1 = "level"
   spectrum!2 = "N"
+  end if
 end if
 
 
@@ -69,15 +79,18 @@ print("time: "+time)
   print("level: "+level)
 
 if (.not. isvar("t")) then
-  print("no time dimension: "+dimsizes(div))
   var  = div(level, :, :) ;(time, lat, lon) -> (lat, lon)
   var2 = vor(level, :, :)
 
+else if (.not. isvar("lev")) then
+  var  = div(time, :, :) ;(time, lat, lon) -> (lat, lon)
+  var2 = vor(time, :, :)
+
 else
-  print("4 dimension: "+dimsizes(div))
   print("("+time+","+level+",:,:)")
   var  = div(time, level, :, :) ;(time, lat, lon) -> (lat, lon)
   var2 = vor(time, level, :, :)
+  end if
 end if
 
 
@@ -144,8 +157,14 @@ print("Calculate spc")
 ; spc_dv = spc_dv/2
 if (.not. isvar("t")) then
   spectrum(level,:) = spc(:)
+
+else
+  if (.not. isvar("lev")) then
+  spectrum(time,:) = spc(:)
+
 else
   spectrum(time,level,:) = spc(:)
+  end if
 end if
 
 end do

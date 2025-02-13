@@ -20,4 +20,11 @@ GIF/
 
 *.html
 
+*.jpg
+
+*.zarr
+
+*.gif
+
+*.png
 spectra/dataset_paper/

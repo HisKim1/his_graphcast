@@ -31,6 +31,7 @@ rm $2
 # rm -f remap_n360.nc uv2dv_linear.nc sp2gp_linear.nc 
 
 # cdo -P 40 selname,sd,svo -sp2gp,linear -uv2dv,linear -remapbil,n180 -chname,u_component_of_wind,u,v_component_of_wind,v -delete,name=batch $ncl_input $ncl_output
+
 cdo -P 40 selname,sd,svo -sp2gp,linear -uv2dv,linear -remapbil,n360 -chname,u_component_of_wind,u,v_component_of_wind,v $ncl_input $ncl_output
 
-ncl /home/hiskim1/graphcast/spectra/caplitalist.ncl 't=2' 'input="'$ncl_output'"' 'output="'$ncl_output'"'
+ncl /home/hiskim1/graphcast/spectra/ke_divor.ncl 't=2' 'input="'$ncl_output'"' 'output="'$ncl_output'"'

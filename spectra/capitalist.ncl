@@ -62,7 +62,7 @@ else
   spectrum!2 = "N"
 end if
 
-max_worker=20
+max_worker=40
 nactive=0
 ndone=0
 
