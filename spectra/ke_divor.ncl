@@ -44,7 +44,7 @@ else
 end if
 
 if (isvar("lev")) then
-  nlevel = dimsizes(f->level)
+  nlevel = dimsizes(f->plev)
 else
   nlevel = 1
 end if

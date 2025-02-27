@@ -158,7 +158,6 @@ req_surface = {
         "10m_v_component_of_wind",
         "2m_temperature",
         "mean_sea_level_pressure",
-        "toa_incident_solar_radiation",
         "geopotential",
         "land_sea_mask"
     ],

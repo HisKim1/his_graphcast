@@ -15,6 +15,9 @@ end_date="2022-01-01"     # 종료 기준 (2022년 1월 1일 이전까지)
 current_date="$start_date"
 
 while [[ "$current_date" < "$end_date" ]]; do
+    # 각 step 시작 시간 기록
+    step_start=$(date +%s)
+    
     # month와 day는 앞의 0을 제거한 정수형으로 추출
     month=$(date -d "$current_date" +%-m)
     day=$(date -d "$current_date" +%-d)
@@ -35,6 +38,11 @@ while [[ "$current_date" < "$end_date" ]]; do
     # 처리 후 tmp 디렉토리 초기화
     rm -rf /geodata2/S2S/DL/GC_input/tmp/*
 
+    # 각 step 종료 시간 기록 후 소요 시간 계산
+    step_end=$(date +%s)
+    step_elapsed=$((step_end - step_start))
+    echo "Step for $filename completed in $step_elapsed seconds."
+    
     # 다음 월요일로 이동 (+7일)
     current_date=$(date -I -d "$current_date + 7 days")
 done
