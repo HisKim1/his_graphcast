@@ -327,8 +327,8 @@ result = xr.merge(ds_list)
 for ds_temp in ds_list:
     ds_temp.close()
 
-print("Applying his_utils.transform_dataset(result, '6hr')...")
-result = his_utils.transform_dataset(result, "6hr")
+print("Applying his_utils.transform_dataset(result, '6h')...")
+result = his_utils.transform_dataset(result, "6h")
 
 #==============================================================
 #  Phase 6: Save Final NetCDF

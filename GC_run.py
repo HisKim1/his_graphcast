@@ -188,6 +188,12 @@ predictions = rollout.chunked_prediction(
 )
 
 # Display the predictions
-predictions.to_netcdf(parser.parse_args().output)
+predictions.squeeze().squeeze().sel(level=300)[[
+   "u_component_of_wind",
+   "v_component_of_wind"
+    ]].rename({
+      "u_component_of_wind":"u",
+      "v_component_of_wind":"v"
+    }).to_netcdf(parser.parse_args().output)
 
 print("5 ================================")

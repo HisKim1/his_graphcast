@@ -948,7 +948,7 @@ def convert_scale(dataset):
 
 
 
-def transform_dataset(dataset, d_t = "6hr"):
+def transform_dataset(dataset, d_t = "6h"):
     """
         Transform the dataset to the format such as variable names and coordinates required by the model.
         Referenced at data_concat.ipynb
@@ -957,7 +957,7 @@ def transform_dataset(dataset, d_t = "6hr"):
     if 'batch' not in dataset.dims:
         dataset = dataset.expand_dims(dim={'batch': [0]})
     
-    tp = f"total_precipitation_{d_t}"
+    tp = f"total_precipitation_{d_t}r"
 
     # 2. 변수 이름 매핑
     name_mapping = {
@@ -987,7 +987,7 @@ def transform_dataset(dataset, d_t = "6hr"):
     dataset['time'] = (dataset.time - start_time).astype('timedelta64[ns]')
     
     # 5. datetime 좌표 추가
-    dataset.coords['datetime'] = ('time', pd.date_range(start=start_time, periods=len(dataset.time), freq='6h'))
+    dataset.coords['datetime'] = ('time', pd.date_range(start=start_time, periods=len(dataset.time), freq=d_t))
     dataset['datetime'] = dataset['datetime'].expand_dims({'batch': [0]}, axis=0)
 
     for var in ['geopotential_at_surface', 'land_sea_mask']:
