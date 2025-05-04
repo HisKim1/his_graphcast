@@ -188,7 +188,7 @@ predictions = rollout.chunked_prediction(
 )
 
 # Display the predictions
-predictions.squeeze().squeeze().sel(level=300)[[
+predictions.squeeze()[[
    "u_component_of_wind",
    "v_component_of_wind"
     ]].rename({
