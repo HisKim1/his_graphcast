@@ -1,6 +1,6 @@
 #! /bin/bash
 
-rm -rf /geodata2/Gencast/fourier/*
+# rm -rf /geodata2/Gencast/fourier/*
 
 python /home/hiskim1/graphcast/spectra/fourier_plot.py --day 1 --ens 1 &
 python /home/hiskim1/graphcast/spectra/fourier_plot.py --day 1 --ens -1 &

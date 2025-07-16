@@ -45,70 +45,82 @@ def fft_split_lon(da, k_thr, part="low"):
 # 1) Compute & save KE + FFT split
 # ---------------------------------------------------------------------------
 print(f"{prefix} Loading HRES")
-HRES = xr.open_zarr("/geodata2/S2S/DL/GC_output/2021-12-20_HRES.zarr", chunks={"lat": 721, "lon": 1440}) \
-        .isel(time=args.day * 4)
+HRES = xr.open_zarr("/geodata2/Gencast/HRES_uv.zarr")\
+        .sel(level=300)\
+            .mean("initial_time")\
+                .rename({"u_component_of_wind":"u", "v_component_of_wind":"v"})\
+                .isel(time=args.day * 4)
+                
 
 print(f"{prefix} Loading ENS and GenCast")
-ENS = xr.open_dataset("/geodata2/S2S/DL/GC_output/2021-12-20_ENS.nc") \
-        .isel(time=args.day * 2)
-GenCast = xr.open_zarr("/geodata2/S2S/DL/GC_output/2021-12-20_GEN.zarr", chunks={"lat": 721, "lon": 1440}) \
-        .sel(level=300) \
-        .rename({"u_component_of_wind":"u","v_component_of_wind":"v"}) \
-        .isel(time=args.day * 2 - 1)
+ENS = xr.open_dataset("/geodata2/S2S/DL/GC_output/IFS-ENS/uv300hPa.nc", chunks={"lat":1440, "lon":721})\
+    .isel(time=args.day * 2)
+        
+# d-1 00z부터 시작
+GenCast = xr.open_dataset("/geodata2/Gencast/uv_300hPa.nc", chunks={"lat":1440, "lon":721})\
+    .rename({"u_component_of_wind":"u", "v_component_of_wind":"v"})\
+    .isel(time=args.day * 2 - 1)
 
 if args.ens == -1:
-    args.ens = "mean"
-    print(f"{prefix} Averaging over all members")
-    ENS = ENS.mean("ensemble")
     GenCast = GenCast.mean("sample")
+    ENS = ENS.mean("ensemble")
+    args.ens = "mean"
+
 else:
-    ENS = ENS.isel(ensemble=args.ens)
+    ENS = ENS.isel(ensemble = args.ens)
     GenCast = GenCast.isel(sample=args.ens - 1)
 
+
 # import os
-out_png = f"/home/hiskim1/2021-12-20_ens{args.ens}_d{args.day}_12z.png"
-# if os.path.exists(out_png):
-#     print(f"{prefix} File already exists → {out_png}")
-#     exit()
+out_png = f"/home/hiskim1/fourier_ens{args.ens}_d{args.day}_12z.png"
 
 print(f"{prefix} Computing kinetic energy")
 HRES = kinetic_energy(HRES)
-ENS  = kinetic_energy(ENS)
+ENS = kinetic_energy(ENS)
 GenCast = kinetic_energy(GenCast)
 
 k_thr = 100
 print(f"{prefix} Performing FFT split at k={k_thr}")
 HRES_high = fft_split_lon(HRES.compute(), k_thr, "high")
-HRES_low  = fft_split_lon(HRES.compute(), k_thr, "low")
-gen_high  = fft_split_lon(GenCast.compute(), k_thr, "high")
-gen_low   = fft_split_lon(GenCast.compute(), k_thr, "low")
-ens_high  = fft_split_lon(ENS.compute(), k_thr, "high")
-ens_low   = fft_split_lon(ENS.compute(), k_thr, "low")
+HRES_low = fft_split_lon(HRES.compute(), k_thr, "low")
+
+gen_high = fft_split_lon(GenCast.compute(), k_thr, "high")
+gen_low = fft_split_lon(GenCast.compute(), k_thr, "low")
+
+ens_high = fft_split_lon(ENS.compute(), k_thr, "high")
+ens_low = fft_split_lon(ENS.compute(), k_thr, "low")
 
 print(f"{prefix} Renaming outputs and building Dataset")
 HRES_high.name = "ke_hres_high"
-HRES_low.name  = "ke_hres_low"
-gen_high.name  = "ke_genc_high"
-gen_low.name   = "ke_genc_low"
-ens_high.name  = "ke_ens_high"
-ens_low.name   = "ke_ens_low"
+HRES_low.name = "ke_hres_low"
+
+gen_high.name = "ke_gen_high"
+gen_low.name = "ke_gen_low"
+
+ens_high.name = "ke_ens_high"
+ens_low.name = "ke_ens_low"
 
 ds = xr.Dataset({
-    "ke_hres":      HRES,
-    "ke_ens":       ENS,
-    "ke_gen":       GenCast,
-    "ke_hres_low":  HRES_low,
+    "ke_hres": HRES,
+    "ke_ens": ENS,
+    "ke_gen": GenCast,
+    "ke_hres_low": HRES_low,
     "ke_hres_high": HRES_high,
-    "ke_genc_low":  gen_low,
+    "ke_genc_low": gen_low,
     "ke_genc_high": gen_high,
-    "ke_ens_low":   ens_low,
-    "ke_ens_high":  ens_high
-}, coords={"lat": HRES.lat, "lon": HRES.lon})
+    "ke_ens_low": ens_low,
+    "ke_ens_high": ens_high
+}, coords={
+    "lat": HRES.lat,
+    "lon": HRES.lon
+})
 
-out_nc = f"/geodata2/Gencast/fourier/211220_ens{args.ens}_d{args.day}_12z.nc"
+out_nc = f"/geodata2/Gencast/fourier/fourier_ens{args.ens}_d{args.day}_12z.nc"
+ds.to_netcdf(out_nc)
 print(f"{prefix} Saving netCDF → {out_nc}")
 ds.to_netcdf(out_nc)
 ds.close()
+
 # ---------------------------------------------------------------------------
 # 2) Plot
 # ---------------------------------------------------------------------------
@@ -118,13 +130,13 @@ from matplotlib.colors import SymLogNorm
 
 ds = xr.open_dataset(out_nc)
 # low_norm  = Normalize(vmin=0,   vmax=650)
-low_norm  = Normalize(vmin=0,   vmax=3000)
+low_norm  = Normalize(vmin=0,   vmax=650)
 # high_norm = PowerNorm(gamma=0.5, vmin=0, vmax=110)
 high_norm = SymLogNorm(
-    linthresh=15,
+    linthresh=10,
     linscale=1.0,
-    vmin=-200,
-    vmax= 200,
+    vmin=-70,
+    vmax= 70,
     base=10
 )
 
